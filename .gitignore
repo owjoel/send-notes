@@ -7,7 +7,7 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
+.idea/*
 # AWS User-specific
 .idea/**/aws.xml
 
@@ -48,6 +48,8 @@ cmake-build-*/
 
 # File-based project format
 *.iws
+
+*.iml
 
 # IntelliJ
 out/
