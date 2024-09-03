@@ -4,8 +4,13 @@ import cs302.notes.models.Notes;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class MultiNotesResponse implements Response {
-    public Notes[] response;
+    public long totalItems;
+    public List<Notes> response;
+    public long totalPages;
+    public long currentPage;
 }
