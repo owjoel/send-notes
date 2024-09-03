@@ -1,22 +1,36 @@
 package cs302.notes.controller;
 
+import cs302.notes.data.request.NotesRequest;
 import cs302.notes.data.response.DefaultResponse;
 import cs302.notes.data.response.Response;
+import cs302.notes.service.services.NotesService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class NotesController {
-    @GetMapping(name = "/")
+
+    private final NotesService notesService;
+
+    //Setter Injection
+    @Autowired
+    public NotesController(NotesService notesService) {
+        this.notesService = notesService;
+    }
+
+    @GetMapping(name="/")
     public ResponseEntity<Response> healthCheck() {
-        DefaultResponse defaultResponse = DefaultResponse.builder().message("Hello World!").build();
-        return new ResponseEntity(defaultResponse, HttpStatus.OK);
+        return new ResponseEntity(DefaultResponse.builder().message("Hello World!").build(), HttpStatus.OK);
+    }
+
+    @PostMapping(name="/notes")
+    public ResponseEntity<Response> createNotes(@Valid @RequestBody NotesRequest request) {
+        Response response = notesService.createNotes(request);
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 }
