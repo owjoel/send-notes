@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -23,12 +22,12 @@ public class NotesController {
         this.notesService = notesService;
     }
 
-    @GetMapping(name="/")
+    @GetMapping("")
     public ResponseEntity<Response> healthCheck() {
         return new ResponseEntity(DefaultResponse.builder().message("Hello World!").build(), HttpStatus.OK);
     }
 
-    @PostMapping(name="/notes")
+    @PostMapping("/notes")
     public ResponseEntity<Response> createNotes(@Valid @RequestBody NotesRequest request) {
         Response response = notesService.createNotes(request);
         return new ResponseEntity(response, HttpStatus.OK);
