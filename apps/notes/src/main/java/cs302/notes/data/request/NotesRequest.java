@@ -2,8 +2,12 @@ package cs302.notes.data.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
 import org.hibernate.validator.constraints.URL;
 
+@Data
+@Builder
 public class NotesRequest {
     @NotEmpty
     //fk_account_owner stores the AWS cognito user id

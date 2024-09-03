@@ -1,5 +1,6 @@
 package cs302.notes.models;
 
+import cs302.notes.data.request.NotesRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,4 +30,11 @@ public class Notes {
     //price stores the notes' price in cents
     private Integer price;
 
+    public Notes(NotesRequest request) {
+        this.fk_account_owner = request.getFk_account_owner();
+        this.title = request.getTitle();
+        this.description = request.getDescription();
+        this.url = request.getUrl();
+        this.price = request.getPrice();
+    }
 }
