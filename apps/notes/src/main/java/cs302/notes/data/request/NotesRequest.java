@@ -1,5 +1,6 @@
 package cs302.notes.data.request;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class NotesRequest {
     //url stores the S3 bucket's URL
     private String url;
 
-    @Size(min=1)
+    @Min(1)
     //price stores the notes' price in cents
     private Integer price;
 }
