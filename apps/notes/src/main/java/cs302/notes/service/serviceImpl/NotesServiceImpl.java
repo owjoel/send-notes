@@ -50,12 +50,21 @@ public class NotesServiceImpl implements NotesService {
     }
 
     @Override
-    public Response modifyNotes(String id, NotesRequest request) {
-        return null;
+    public Response replaceNotes(String id, NotesRequest request) {
+        Notes notes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
+        notes.setFk_account_owner(request.getFk_account_owner());
+        notes.setTitle(request.getTitle());
+        notes.setDescription(request.getDescription());
+        notes.setUrl(request.getUrl());
+        notes.setPrice(request.getPrice());
+        notesRepository.save(notes);
+        return SingleNotesResponse.builder().response(notes).build();
     }
 
     @Override
     public Response deleteNotes(String id) {
-        return null;
+        Notes notes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
+        notesRepository.delete(notes);
+        return SingleNotesResponse.builder().response(notes).build();
     }
 }
