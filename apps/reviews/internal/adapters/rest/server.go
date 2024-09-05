@@ -21,8 +21,8 @@ func (a Adapter) Run() {
 
 	server.GET("/reviews", a.Get)
 	server.POST("/reviews", a.Create)
-	server.PUT("/reviews", a.Update)
-	server.DELETE("/reviews", a.Delete)
+	server.PUT("/reviews/:id", a.Update)
+	server.DELETE("/reviews/:id", a.Delete)
 
 	fmt.Printf("Application started")
 	server.Run(fmt.Sprintf(":%d", a.port))

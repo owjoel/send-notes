@@ -26,7 +26,6 @@ func (a Adapter) Create(c *gin.Context) {
 func (a Adapter) Get(c *gin.Context) {
 	uID := c.Query("user_id")
 	rID := c.Query("reviewer_id")
-	fmt.Printf("Getting review of ID: %v", rID)
 	review, err := a.api.GetReview(uID, rID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error Processing Request"})
@@ -37,9 +36,28 @@ func (a Adapter) Get(c *gin.Context) {
 }
 
 func (a Adapter) Update(c *gin.Context) {
+	var r domain.Review
+	rID := c.Param("id")
 
+	if err := c.ShouldBindJSON(&r); err != nil {
+		fmt.Printf("binding json to review: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Bad input"})
+		return
+	}
+	_, err := a.api.UpdateReview(rID, r)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error Processing Request"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "Update successful"})
 }
 
 func (a Adapter) Delete(c *gin.Context) {
-
+	rID := c.Param("id")
+	res, err := a.api.DeleteReview(rID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error Processing Request"})
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }
