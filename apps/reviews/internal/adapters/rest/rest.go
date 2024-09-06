@@ -64,10 +64,12 @@ func (a Adapter) Delete(c *gin.Context) {
 }
 
 func (a Adapter) Average(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("user_id")
 	ave, err := a.api.GetUserAverage(id)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error getting user average"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id, "ave": ave})
 }
