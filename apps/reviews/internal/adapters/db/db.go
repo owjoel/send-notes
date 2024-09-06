@@ -21,9 +21,9 @@ type Review struct {
 }
 
 type UserReviewData struct {
-	UserID string `bson:"_id"`
-	TotalRating int64 `bson:"total_rating"`
-	TotalReview int32 `bson:"total_review"`
+	UserID      string `bson:"_id"`
+	TotalRating int64  `bson:"total_rating"`
+	TotalReview int32  `bson:"total_review"`
 }
 
 type Adapter struct {
@@ -83,18 +83,18 @@ func (a *Adapter) Update(id string, rating int32) (domain.Review, error) {
 	}
 	// _, updateErr := a.db.Collection("reviews").UpdateByID(context.TODO(), rID, bson.M{"$set": bson.M{"rating": rating, "created_at": time.Now()}})
 	res := a.db.Collection("reviews").FindOneAndUpdate(context.TODO(), bson.M{"_id": rID}, bson.M{"$set": bson.M{"rating": rating, "created_at": time.Now()}})
-	
+
 	var r Review
 	updateErr := res.Decode(&r)
 	if updateErr != nil {
 		return domain.Review{}, updateErr
 	}
 	prevReview := domain.Review{
-		ID: r.ID,
-		UserID: r.UserID,   
+		ID:         r.ID,
+		UserID:     r.UserID,
 		ReviewerID: r.ReviewerID,
-		Rating: r.Rating,
-		CreatedAt: r.CreatedAt.Unix(),
+		Rating:     r.Rating,
+		CreatedAt:  r.CreatedAt.Unix(),
 	}
 
 	fmt.Println(prevReview)
@@ -132,7 +132,7 @@ func (a *Adapter) IncrementRating(id string, rating int32, inc int32) error {
 	opts := options.Update().SetUpsert(true)
 	_, incErr := a.db.Collection("user_averages").UpdateByID(context.TODO(), id, bson.M{"$inc": bson.M{"total_review": inc, "total_rating": rating}}, opts)
 	if incErr != nil {
-		return incErr 
+		return incErr
 	}
 	return nil
 }

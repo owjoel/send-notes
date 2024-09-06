@@ -39,13 +39,13 @@ func (a Application) GetReview(userID string, reviewerID string) (domain.Review,
 	return review, nil
 }
 func (a Application) UpdateReview(id string, review domain.Review) (domain.Review, error) {
-	res, err := a.db.Update(id, review.Rating);
-	if  err != nil {
+	res, err := a.db.Update(id, review.Rating)
+	if err != nil {
 		fmt.Println("Updating review:", err)
 		return domain.Review{}, err
 	}
 
-	if err := a.db.IncrementRating(res.UserID, review.Rating - res.Rating, 0); err != nil {
+	if err := a.db.IncrementRating(res.UserID, review.Rating-res.Rating, 0); err != nil {
 		return domain.Review{}, err
 	}
 	return domain.Review{ID: review.ID}, nil
