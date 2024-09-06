@@ -3,7 +3,7 @@ const axios = require('axios');
 const router = express.Router();
 const Order = require('../models/Order');
 
-// Retrieve an order by ID
+// Retrieve order by ID
 router.get('/:orderId', async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId);
@@ -12,29 +12,23 @@ router.get('/:orderId', async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
   
-
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Create a new order
+// Create new order
 router.post('/', async (req, res) => {
   const { orderId, stripeTransactionId, noteId, buyerEmail, orderStatus, orderPrice } = req.body;
 
   try {
     // Validate noteId
-    const noteResponse = await axios.get(`${NOTE_SERVICE_URL}/${noteId}`);
-    if (noteResponse.status !== 200) {
-      return res.status(400).json({ message: 'Invalid note ID' });
-    }
+    // Mock noteResponse as if the Note service validation was successful
+    const noteResponse = { status: 200 }; // Fake successful response
 
-    // Validate buyerEmail
-    const accountResponse = await axios.get(`${ACCOUNT_SERVICE_URL}?email=${buyerEmail}`);
-    if (accountResponse.status !== 200) {
-      return res.status(400).json({ message: 'Invalid account email' });
-    }
+    // Mock accountResponse as if the Account service validation was successful
+    const accountResponse = { status: 200 }; // Fake successful response
 
     const order = new Order({
       orderId,

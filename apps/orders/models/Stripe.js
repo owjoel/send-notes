@@ -11,7 +11,7 @@ const stripeSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  }
-});
+  }, 
+}, { collection: 'stripe' });
 
 module.exports = mongoose.model('Stripe', stripeSchema);
