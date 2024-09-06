@@ -1,0 +1,63 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Logs
+*.log
+
+# Dependency directories (vendor/)
+vendor/
+
+# Go module files
+go.sum
+
+# IDE / Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
+# Linux / Unix
+*.o
+*.a
+*.swp
+*.swo
+
+# IntelliJ IDEA
+*.iml
+
+# Go build artifacts
+/bin/
+/build/
+/dist/
+
+# Go workspace cache
+*.cache
+
+# GoLand specific files
+/.idea/
+/.idea/
+/gogradle/
+/out/
+/project/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment files
+.env
+*.env
+.env.*
