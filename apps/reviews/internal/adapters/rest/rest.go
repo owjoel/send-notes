@@ -17,6 +17,7 @@ func (a Adapter) Create(c *gin.Context) {
 	}
 	result, err := a.api.SubmitReview(r)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error Processing Review"})
 		return
 	}
@@ -60,4 +61,13 @@ func (a Adapter) Delete(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, res)
+}
+
+func (a Adapter) Average(c *gin.Context) {
+	id := c.Param("id")
+	ave, err := a.api.GetUserAverage(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error getting user average"})
+	}
+	c.JSON(http.StatusOK, gin.H{"id": id, "ave": ave})
 }
