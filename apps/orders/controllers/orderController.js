@@ -1,9 +1,9 @@
-const orderService = require('../services/orderService');
+const OrderService = require('../services/orderService');
 
 // Retrieve order by ID
 async function getOrderById(req, res) {
   try {
-    const order = await orderService.findOrderById(req.params.orderId);
+    const order = await OrderService.findById(req.params.orderId);
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
@@ -24,7 +24,7 @@ async function createOrder(req, res) {
 
     // Validate buyerEmail
     // ALSO FOR NEXT TIME
-    const order = await orderService.createOrder({
+    const order = await OrderService.createOrder({
       orderId,
       stripeTransactionId,
       noteId,
@@ -42,7 +42,7 @@ async function createOrder(req, res) {
 // Retrieve all orders
 async function getAllOrders(req, res) {
   try {
-      const orders = await orderService.findAllOrders();
+      const orders = await OrderService.findAll();
       res.status(200).json(orders);
   } catch (error) {
       res.status(500).json({ message: error.message });
@@ -55,7 +55,7 @@ async function updateOrderById(req, res) {
   const updateData = req.body;
 
   try {
-    const updatedOrder = await orderService.updateOrderById(orderId, updateData);
+    const updatedOrder = await OrderService.update(orderId, updateData);
     if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
@@ -70,7 +70,8 @@ async function updateOrderById(req, res) {
 // Delete an order by ID
 async function deleteOrderById(req, res) {
   try {
-    const result = await orderService.deleteOrderById(req.params.orderId);
+    const result = await OrderService.deleteOrderById(req.params.orderId);
+
     if (result.deletedCount > 0) {
       res.status(200).json({ message: 'Order deleted successfully' });
     } else {
