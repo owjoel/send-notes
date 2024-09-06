@@ -4,7 +4,8 @@ const orderSchema = new mongoose.Schema({
   orderId: {  
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    unique:true
   },
   stripeTransactionId: {
     type: String,
@@ -31,5 +32,6 @@ const orderSchema = new mongoose.Schema({
     required: true
   }
 });
+
 
 module.exports = mongoose.model('Order', orderSchema);
