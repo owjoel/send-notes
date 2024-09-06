@@ -20,6 +20,12 @@ type Review struct {
 	CreatedAt  time.Time `bson:"created_at"`
 }
 
+type UserReviewData struct {
+	UserID      string `bson:"_id"`
+	TotalRating int64  `bson:"total_rating"`
+	TotalReview int32  `bson:"total_review"`
+}
+
 type Adapter struct {
 	db *mongo.Database
 }
@@ -60,27 +66,39 @@ func (a Adapter) Save(r *domain.Review) (string, error) {
 		Rating:     r.Rating,
 		CreatedAt:  time.Now(),
 	}
-	fmt.Println(reviewEntity)
 	res, err := a.db.Collection("reviews").InsertOne(context.TODO(), reviewEntity)
-	fmt.Println(res, err)
 	if err != nil {
 		return "", err
 	}
 	insertedID := res.InsertedID.(primitive.ObjectID).Hex()
+
 	fmt.Printf("Inserted document with ObjectID: %v", insertedID)
 	return insertedID, nil
 }
-func (a *Adapter) Update(id string, rating int32) error {
+
+func (a *Adapter) Update(id string, rating int32) (domain.Review, error) {
 	rID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return domain.Review{}, err
 	}
-	res, err := a.db.Collection("reviews").UpdateByID(context.TODO(), rID, bson.M{"$set": bson.M{"rating": rating, "created_at": time.Now()}})
-	if err != nil {
-		return err
+	// _, updateErr := a.db.Collection("reviews").UpdateByID(context.TODO(), rID, bson.M{"$set": bson.M{"rating": rating, "created_at": time.Now()}})
+	res := a.db.Collection("reviews").FindOneAndUpdate(context.TODO(), bson.M{"_id": rID}, bson.M{"$set": bson.M{"rating": rating, "created_at": time.Now()}})
+
+	var r Review
+	updateErr := res.Decode(&r)
+	if updateErr != nil {
+		return domain.Review{}, updateErr
 	}
-	fmt.Println(res.MatchedCount, res.ModifiedCount)
-	return nil
+	prevReview := domain.Review{
+		ID:         r.ID,
+		UserID:     r.UserID,
+		ReviewerID: r.ReviewerID,
+		Rating:     r.Rating,
+		CreatedAt:  r.CreatedAt.Unix(),
+	}
+
+	fmt.Println(prevReview)
+	return prevReview, nil
 }
 
 func (a *Adapter) Delete(id string) error {
@@ -93,5 +111,28 @@ func (a *Adapter) Delete(id string) error {
 		return err
 	}
 	fmt.Println(res.DeletedCount)
+	return nil
+}
+
+func (a *Adapter) AverageReview(id string) (float32, error) {
+	var u UserReviewData
+	res := a.db.Collection("user_averages").FindOne(context.TODO(), bson.M{"_id": id})
+	if err := res.Decode(&u); err != nil {
+		return 0, err
+	}
+	return float32(u.TotalRating) / float32(u.TotalReview), nil
+}
+
+func (a *Adapter) IncrementRating(id string, rating int32, inc int32) error {
+	fmt.Println(id)
+	// objectID, err := primitive.ObjectIDFromHex(id)
+	// if err != nil {
+	// 	return err
+	// }
+	opts := options.Update().SetUpsert(true)
+	_, incErr := a.db.Collection("user_averages").UpdateByID(context.TODO(), id, bson.M{"$inc": bson.M{"total_review": inc, "total_rating": rating}}, opts)
+	if incErr != nil {
+		return incErr
+	}
 	return nil
 }

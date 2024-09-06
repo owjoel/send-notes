@@ -23,6 +23,7 @@ func (a Adapter) Run() {
 	server.POST("/reviews", a.Create)
 	server.PUT("/reviews/:id", a.Update)
 	server.DELETE("/reviews/:id", a.Delete)
+	server.GET("/reviews/user/:user_id", a.Average)
 
 	fmt.Printf("Application started")
 	server.Run(fmt.Sprintf(":%d", a.port))

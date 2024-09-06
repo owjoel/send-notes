@@ -1,13 +1,17 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 )
 
 func GetDBConnectionString() string {
-	return getEnvironmentValue("DB_CONNECTION_STRING")
+	username := getEnvironmentValue("DB_USERNAME")
+	password := getEnvironmentValue("DB_PASSWORD")
+	host := getEnvironmentValue("DB_HOST")
+	return fmt.Sprintf("mongodb+srv://%s:%s@%s/", username, password, host)
 }
 
 func GetApplicationPort() int {

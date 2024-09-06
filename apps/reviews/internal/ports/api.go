@@ -7,4 +7,7 @@ type APIPort interface {
 	GetReview(userID string, reviewerID string) (domain.Review, error)
 	UpdateReview(id string, review domain.Review) (domain.Review, error)
 	DeleteReview(id string) (domain.Review, error)
+
+	GetUserAverage(id string) (float32, error)
+	// UpdateUserAverage(id string, rating int32) error
 }
