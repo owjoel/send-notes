@@ -1,9 +1,9 @@
-const orderService = require('../services/orderService');
+const OrderService = require('../services/orderService');
 
 // Retrieve order by ID
 async function getOrderById(req, res) {
   try {
-    const order = await orderService.findOrderById(req.params.orderId);
+    const order = await OrderService.findById(req.params.orderId);
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
@@ -16,36 +16,22 @@ async function getOrderById(req, res) {
 
 // Create new order
 async function createOrder(req, res) {
-  const { orderId, stripeTransactionId, noteId, buyerEmail, orderStatus, orderPrice } = req.body;
-
+  // const { orderId, stripeTransactionId, noteId, buyerEmail, orderStatus, orderPrice } = req.body;
   try {
-    // Validate noteId
-    // TO FILL UP NXT TIME
-
-    // Validate buyerEmail
-    // ALSO FOR NEXT TIME
-    const order = await orderService.createOrder({
-      orderId,
-      stripeTransactionId,
-      noteId,
-      buyerEmail,
-      orderStatus,
-      orderPrice
-    });
-
+    const order = await OrderService.createOrder(req.body);
     res.status(201).json({ message: 'Order created successfully', order });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 }
 
 // Retrieve all orders
 async function getAllOrders(req, res) {
   try {
-      const orders = await orderService.findAllOrders();
+      const orders = await OrderService.findAll();
       res.status(200).json(orders);
   } catch (error) {
-      res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Internal server error' });
   }
 }
 
@@ -55,29 +41,42 @@ async function updateOrderById(req, res) {
   const updateData = req.body;
 
   try {
-    const updatedOrder = await orderService.updateOrderById(orderId, updateData);
+    const updatedOrder = await OrderService.update(orderId, updateData);
     if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
-
     res.status(200).json({ message: 'Order updated successfully', updatedOrder });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Internal server error' });
   }
 }
 
+// async function updateStripePaymentById(req, res) {
+//   const {orderId} = req.params;
+//
+//   try {
+//     const updatedOrder = await OrderService.updateTestOrder(orderId);
+//     if (!updatedOrder) {
+//       return res.status(404).json({ message: 'Order not found' });
+//     }
+//     res.status(200).json({ message: 'Order updated successfully', updatedOrder });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// }
 
 // Delete an order by ID
 async function deleteOrderById(req, res) {
   try {
-    const result = await orderService.deleteOrderById(req.params.orderId);
+    const result = await OrderService.deleteOrderById(req.params.orderId);
+
     if (result.deletedCount > 0) {
       res.status(200).json({ message: 'Order deleted successfully' });
     } else {
       res.status(404).json({ message: 'Order not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Internal server error' });
   }
 }
 
@@ -86,5 +85,5 @@ module.exports = {
   createOrder,
   getAllOrders,
   updateOrderById,
-  deleteOrderById
+  deleteOrderById,
 };

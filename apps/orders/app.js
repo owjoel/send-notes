@@ -5,8 +5,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const orderRouter = require('./routes/order');
+const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
-
+const bodyParser = require("body-parser");
 var app = express();
 
 // view engine setup
@@ -14,12 +15,21 @@ var app = express();
 connectDB();
 
 app.use(logger('dev'));
+app.use(
+    bodyParser.json({
+      verify: function(req, res, buf) {
+        req.rawBody = buf;
+      }
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//body parse is for stripe webhook
 app.use('/orders', orderRouter);
+app.use('/stripe', stripeRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -27,7 +37,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
