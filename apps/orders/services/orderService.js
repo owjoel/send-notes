@@ -15,6 +15,7 @@ class OrderService {
      * Backend will return client_secret to payment intent in frontend
      *
      * Frontend(Confirms payment, using client_secret to submit payment intent)
+     * Webhook listens to this, calls a function updateStripePaymentId in Order service, updates the order data in the table via paymentIntentId
      *
      */
 
@@ -97,6 +98,7 @@ class OrderService {
         }
     }
 
+    // Note that this function is only used for stripe webhook
     static async updateStripePaymentIntent(paymentIntentId ) {
         try {
             const updatedOrder= await Order.findOneAndUpdate(
