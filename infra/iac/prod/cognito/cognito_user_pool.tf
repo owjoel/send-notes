@@ -22,7 +22,8 @@ resource "aws_cognito_user_pool" "onlynotes_user-pool" {
 
   email_configuration {
     email_sending_account = "DEVELOPER"
-    source_arn            = "arn:aws:ses:ap-southeast-1:211125709264:identity/onlynotes.service@gmail.com"
+    from_email_address    = "Onlynotes <noreply@onlynotes.net>"
+    source_arn            = "arn:aws:ses:ap-southeast-1:211125709264:identity/onlynotes.net"
   }
 
   mfa_configuration = "OPTIONAL"

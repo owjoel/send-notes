@@ -12,7 +12,7 @@ resource "aws_cognito_user_pool_client" "onlynotes_user-pool-client" {
   logout_urls                                   = ["https://onlynotes.net/signout"]
   name                                          = "onlynotes"
   prevent_user_existence_errors                 = "ENABLED"
-  read_attributes                               = ["address", "birthdate", "email", "email_verified", "family_name", "gender", "given_name", "locale", "middle_name", "name", "nickname", "phone_number", "phone_number_verified", "picture", "preferred_username", "profile", "updated_at", "website", "zoneinfo"]
+  read_attributes                               = ["email","name"]
   refresh_token_validity                        = "30"
   supported_identity_providers                  = ["COGNITO"]
 
@@ -22,6 +22,6 @@ resource "aws_cognito_user_pool_client" "onlynotes_user-pool-client" {
     refresh_token = "days"
   }
 
-  user_pool_id     = "ap-southeast-1_6Jztp4KO0"
-  write_attributes = ["address", "birthdate", "email", "family_name", "gender", "given_name", "locale", "middle_name", "name", "nickname", "phone_number", "picture", "preferred_username", "profile", "updated_at", "website", "zoneinfo"]
+  user_pool_id     = aws_cognito_user_pool.onlynotes_user-pool.id
+  write_attributes = ["email","name"]
 }
