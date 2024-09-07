@@ -45,4 +45,17 @@ public class NotesController {
         Response response = notesService.getNotesById(notesId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PutMapping("/notes/{notesId}")
+    public ResponseEntity<Response> replaceNotesById(@PathVariable("notesId") String notesId,
+                                                     @Valid @RequestBody NotesRequest request) {
+        Response response = notesService.replaceNotes(notesId, request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/notes/{notesId}")
+    public ResponseEntity<Response> deleteNotesById(@PathVariable("notesId") String notesId) {
+        Response response = notesService.deleteNotes(notesId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

@@ -9,6 +9,6 @@ public interface NotesService {
     Response getNotesById(String id);
     Response getNotes(int pageNo, int limit);
     Response createNotes(NotesRequest request);
-    Response modifyNotes(String id, NotesRequest request);
+    Response replaceNotes(String id, NotesRequest request);
     Response deleteNotes(String id);
 }
