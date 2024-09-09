@@ -10,9 +10,9 @@ import org.hibernate.validator.constraints.URL;
 @Data
 @Builder
 public class NotesRequest {
-    @NotEmpty
-    //fk_account_owner stores the AWS cognito user id
-    private String fk_account_owner;
+    @NotEmpty @Size(min=1)
+    //fkAccountOwner stores the AWS cognito user id
+    private String fkAccountOwner;
 
     @NotEmpty @Size(min=1, max=50)
     //title stores the notes title to be displayed
@@ -25,6 +25,10 @@ public class NotesRequest {
     @URL
     //url stores the S3 bucket's URL
     private String url;
+
+    @NotEmpty @Size(min=1, max=50)
+    //categoryCode stores the module number of the notes
+    private String categoryCode;
 
     @Min(1)
     //price stores the notes' price in cents

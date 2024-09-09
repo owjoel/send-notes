@@ -51,12 +51,10 @@ public class NotesServiceImpl implements NotesService {
 
     @Override
     public Response replaceNotes(String id, NotesRequest request) {
-        Notes notes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
-        notes.setFkAccountOwner(request.getFk_account_owner());
-        notes.setTitle(request.getTitle());
-        notes.setDescription(request.getDescription());
-        notes.setUrl(request.getUrl());
-        notes.setPrice(request.getPrice());
+        // Verification
+        notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
+        Notes notes = new Notes(request);
+        notes.set_id(id);
         notesRepository.save(notes);
         return SingleNotesResponse.builder().response(notes).build();
     }
