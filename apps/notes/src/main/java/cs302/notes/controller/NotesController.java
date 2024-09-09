@@ -28,9 +28,10 @@ public class NotesController {
     }
 
     @GetMapping("/notes")
-    public ResponseEntity<Response> getNotes(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Response> getNotes(@RequestParam(defaultValue = "") String account_num,
+                                             @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "10") int limit) {
-        Response response = notesService.getNotes(page, limit);
+        Response response = notesService.getNotes(account_num, page, limit);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
