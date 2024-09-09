@@ -32,9 +32,9 @@ public class NotesServiceImpl implements NotesService {
     }
 
     @Override
-    public Response getNotes(int pageNum, int limit) {
+    public Response getNotes(String account_num, int pageNum, int limit) {
         Pageable paging = PageRequest.of(pageNum, limit);
-        Page page = notesRepository.findAll(paging);
+        Page page = "".equals(account_num) ? notesRepository.findAll(paging) : notesRepository.findByFkAccountOwner(account_num, paging);
         return MultiNotesResponse.builder()
                 .totalItems(page.getTotalElements())
                 .response(page.getContent())
@@ -52,7 +52,7 @@ public class NotesServiceImpl implements NotesService {
     @Override
     public Response replaceNotes(String id, NotesRequest request) {
         Notes notes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
-        notes.setFk_account_owner(request.getFk_account_owner());
+        notes.setFkAccountOwner(request.getFk_account_owner());
         notes.setTitle(request.getTitle());
         notes.setDescription(request.getDescription());
         notes.setUrl(request.getUrl());
