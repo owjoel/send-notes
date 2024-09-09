@@ -16,7 +16,7 @@ public class Notes {
     private String _id;
 
     //fk_account_owner stores the AWS cognito user id
-    private String fk_account_owner;
+    private String fkAccountOwner;
 
     //title stores the notes title to be displayed
     private String title;
@@ -31,7 +31,7 @@ public class Notes {
     private Integer price;
 
     public Notes(NotesRequest request) {
-        this.fk_account_owner = request.getFk_account_owner();
+        this.fkAccountOwner = request.getFk_account_owner();
         this.title = request.getTitle();
         this.description = request.getDescription();
         this.url = request.getUrl();
