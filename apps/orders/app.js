@@ -4,6 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const healthRouter = require('./routes/health');
 const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //body parse is for stripe webhook
+app.use('/health', healthRouter);
 app.use('/orders', orderRouter);
 app.use('/stripe', stripeRouter);
 
