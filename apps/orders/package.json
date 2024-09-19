@@ -7,6 +7,8 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.651.1",
+    "@aws-sdk/client-sqs": "^3.651.1",
     "axios": "^1.7.7",
     "body-parser": "^1.20.2",
     "cookie-parser": "~1.4.4",
@@ -18,6 +20,7 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.6.1",
     "morgan": "~1.9.1",
+    "orders": "file:",
     "stripe": "^16.10.0"
   },
   "devDependencies": {

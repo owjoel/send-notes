@@ -1,19 +1,25 @@
 require('dotenv').config();
+// External Dependencies
 var createError = require('http-errors');
+const bodyParser = require("body-parser");
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
+// App Dependencies
 const healthRouter = require('./routes/health');
 const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
-const bodyParser = require("body-parser");
+const {  }
+
 var app = express();
 
 // view engine setup
 
 connectDB();
+
 
 app.use(logger('dev'));
 app.use(

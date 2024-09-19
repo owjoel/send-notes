@@ -2,9 +2,7 @@ const Order = require('../models/Order');
 const stripe = require('../config/stripeConfig');  // Import the configured Stripe instance
 
 // Create new order
-
 class OrderService {
-
     /**
      * Sample flow of creating orders
      * Frontend (Customer add items to cart, clicks pay)
@@ -31,7 +29,7 @@ class OrderService {
      */
     static async createOrder(orderData) {
         try {
-
+            
             const paymentIntent = await stripe.paymentIntents.create({
                 amount : orderData.orderPrice,
                 currency: 'sgd',
@@ -47,6 +45,7 @@ class OrderService {
             }
             const order = new Order(data);
             return await order.save();
+            
         } catch (error) {
             console.log(error);
             throw new Error('Internal server error');
