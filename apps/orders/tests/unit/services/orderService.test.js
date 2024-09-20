@@ -6,10 +6,10 @@ jest.mock('../../../models/Order');
 jest.mock('../../../config/stripeConfig');  
 
 describe('OrderService', () => {
-
+  
+  // Tests createOrder
   describe('createOrder', () => {
     let orderData, stripePaymentIntentMock, orderSaveMock;
-
     beforeEach(() => {
       // Mock order data and Stripe response
       orderData = {
@@ -38,12 +38,13 @@ describe('OrderService', () => {
       Order.mockImplementation(() => ({
         save: orderSaveMock
       }));
+
     });
 
     it('should create a new order and return the order data', async () => {
       const result = await OrderService.createOrder(orderData);
-
-      // Assert that the paymentIntent was created with correct data
+      
+      // Assert that the paymentIntent was created with the correct data
       expect(stripe.paymentIntents.create).toHaveBeenCalledWith({
         amount: orderData.orderPrice,
         currency: 'sgd',
@@ -51,7 +52,7 @@ describe('OrderService', () => {
         payment_method_types: ['card']
       });
 
-      // Assert that order was saved correctly
+      // Assert that the order was saved correctly
       expect(orderSaveMock).toHaveBeenCalled();
       expect(result).toEqual({
         ...orderData,
@@ -63,11 +64,37 @@ describe('OrderService', () => {
     
     it('should throw an error if Stripe payment fails', async () => {
       stripe.paymentIntents.create.mockRejectedValue(new Error('Stripe error'));
-
       await expect(OrderService.createOrder(orderData))
         .rejects
         .toThrow('Internal server error');
     });
+
   });
 
+  // Tests findById
+  describe('findById', () => {
+
+    it('should return the correct order by ID', async () => {
+      const orderMock = {
+        id: 'order_1',
+        noteId: 'noteId_1',
+        buyerEmail: 'testing@gmail.com',
+        orderPrice: 15
+      };
+
+      Order.findById.mockResolvedValue(orderMock);
+      const result = await OrderService.findById('order_1');
+      expect(Order.findById).toHaveBeenCalledWith('order_1');
+      expect(result).toEqual(orderMock);
+
+    });
+
+    it('should throw an error if order is not found', async () => {
+      Order.findById.mockRejectedValue(new Error('Order not found'));
+      await expect(OrderService.findById('invalid_order_id'))
+        .rejects
+        .toThrow('Internal server error');
+    });
+
+  });
 });
