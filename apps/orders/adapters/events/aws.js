@@ -40,19 +40,20 @@ async function publishOrderCreatedEvent(data) {
     new PutEventsCommand({
       Entries: [
         {
+          EventBusName: "only-notes-v1",
           Detail: JSON.stringify(data),
-          DetailType: "Order Created",
+          DetailType: "OrderCreated",
           Source: "only-notes.orders",
         },
       ],
     })
   );
-  console.log("Response: " + res);
+  console.log("Response: " + JSON.stringify(res.$metadata));
   return res.$metadata.httpStatusCode == 200;
 }
 
 async function AWSClient() {
-  setInterval(pollMessage, )
+  
 }
 
-module.exports({ publishOrderCreatedEvent });
+module.exports = { AWSClient, publishOrderCreatedEvent };

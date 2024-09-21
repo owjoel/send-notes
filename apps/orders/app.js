@@ -12,12 +12,14 @@ const healthRouter = require('./routes/health');
 const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
-const {  }
+const connectMQ = require('./config/events');
+const { AWSClient } = require('./adapters/events/aws');
 
 var app = express();
+// AWSClient()
 
 // view engine setup
-
+connectMQ();
 connectDB();
 
 
