@@ -17,17 +17,19 @@ function publish(id, event, data) {
     const rk = "orders." + event;
     ch.publish('orders', rk, Bufer.from(data));
     console.log("Published %s event for transaction id: %s", event, id);
+    return true;
   } catch (err) {
     console.log(err);
   }
+  return false;
 }
 
 function publishOrderCreated(id, data) {
-  publish(id, "created", data);
+  return publish(id, "created", data);
 }
 
 function publishOrderProcessing(id, data) {
-  publish(id, "processing", data);
+  return publish(id, "processing", data);
 }
 
 module.exports = { configProducer, publishOrderCreated, publishOrderProcessing };
