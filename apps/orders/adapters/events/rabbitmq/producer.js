@@ -25,6 +25,7 @@ function publish(id, event, data) {
 }
 
 function publishOrderCreated(id, data) {
+  console.log('published orderCreated event', data)
   return publish(id, "created", data);
 }
 

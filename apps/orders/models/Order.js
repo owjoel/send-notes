@@ -1,23 +1,18 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-  orderId: {  
+  stripeTransactionId: {
     type: String,
     required: true,
     trim: true,
     unique:true
-  },
-  stripeTransactionId: {
-    type: String,
-    required: true,
-    trim: true
   },
   noteId: {  
     type: String,
     required: true,
     trim: true,
   },
-  buyerEmail: {  
+  buyerId: {
     type: String,
     required: true,
     trim: true,

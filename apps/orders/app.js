@@ -24,6 +24,8 @@ connectDB();
 
 
 app.use(logger('dev'));
+
+//body parse is for stripe webhook
 app.use(
     bodyParser.json({
       verify: function(req, res, buf) {
@@ -36,7 +38,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//body parse is for stripe webhook
 app.use('/health', healthRouter);
 app.use('/orders', orderRouter);
 app.use('/stripe', stripeRouter);
