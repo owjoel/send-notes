@@ -7,19 +7,19 @@ async function stripeWebhook  (req, res){
 
         if (event.type === 'payment_intent.created') {
             const paymentIntent = event.data.object;
-            console.log('PaymentIntent created:', paymentIntent);
+            console.log('PaymentIntent created:');
 
         } else if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
             console.log('PaymentIntent succeeded:', paymentIntent);
-            await OrderService.updateStripePaymentIntent(paymentIntent.id);
+            await OrderService.updateOrderStatus(paymentIntent.id, 'successful');
 
         } else if (event.type === 'payment_intent.payment_failed') {
             const paymentIntent = event.data.object;
+            await OrderService.updateOrderStatus(paymentIntent.id, 'failed');
             console.log('PaymentIntent failed:', paymentIntent);
         }
-
-        res.json({ received: true }); //reply stripe if successful
+        res.json({ received: true });
     } catch (error) {
         return res.status(500).json({error: 'Internal Server Error'});
     }
