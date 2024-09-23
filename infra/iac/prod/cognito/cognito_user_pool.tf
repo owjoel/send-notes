@@ -1,4 +1,7 @@
 resource "aws_cognito_user_pool" "onlynotes_user-pool" {
+  tags = {
+    Name = "${var.environment}-onlynotes_user-pool"
+  }
   account_recovery_setting {
     recovery_mechanism {
       name     = "verified_email"
@@ -69,4 +72,9 @@ resource "aws_cognito_user_pool" "onlynotes_user-pool" {
     email_message_by_link = "Please click {##Verify Email##} to verify your email address. \nIf you did not perform this action, ignore this email.\n\nWagwan my G"
     email_subject_by_link = "OnlyNotes verification"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
 }
