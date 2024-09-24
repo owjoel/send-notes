@@ -18,38 +18,17 @@ const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
 const connectMQ = require('./config/events');
 const { findById } = require('./services/orderService');
+const configSocket = require('./adapters/sockets/websocket');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
 
 
 // view engine setup
 connectMQ();
 connectDB();
 
-
-server.on('upgrade', (req, socket, head) => {
-  const pathname = url.parse(req.url).pathname;
-  const segments = pathname.split('/').filter(seg => seg !== '');
-  const order = findById(segments[1]);
-  if (segments[0] === "orders" && order) {
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      wss.emit('connection', ws, req);
-    })
-  } else {
-    console.log('websocket closed');
-    socket.destroy();
-  }
-})
-
-wss.on('connection', (ws, req) => {
-  console.log('socket created with client ' + req.socket.remoteAddress);
-  ws.on('message', (msg) => {
-    console.log(msg.toString());
-    ws.send(JSON.stringify({"status": 200, "msg": "RECEIVED"}));
-  })
-})
+configSocket(server);
 
 app.use(logger('dev'));
 
