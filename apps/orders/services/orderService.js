@@ -5,6 +5,7 @@ const {publishOrderCreated, publishOrderProcessing} = require("../adapters/event
 // Create new order
 class OrderService {
     static async createOrder(orderData) {
+        console.log(orderData);
         try {
             const data = {
                 ...orderData,
@@ -13,7 +14,10 @@ class OrderService {
             const order = new Order(data);
             await order.save();
             publishOrderCreated(order._id, order)
-            return paymentIntent.client_secret;
+            return {
+                order_id: order._id,
+                client_secret: paymentIntent.client_secret,
+            };
             
         } catch (error) {
             console.log(error);
