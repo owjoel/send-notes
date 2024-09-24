@@ -1,6 +1,6 @@
 const url = require('url');
 const WebSocket = require("ws");
-const { findById } = require('../../services/orderService');
+const {handleOrderRequest} = require("./orderSocket");
 
 const wss = new WebSocket.Server({ noServer: true });
 
@@ -9,11 +9,12 @@ function configSocket(server) {
     try {
       const pathname = url.parse(req.url).pathname;
       const segments = pathname.split("/").filter((seg) => seg !== "");
-      const order = await findById(segments[1]);
-  
-      if (segments[0] === "orders" && order) {
+
+      if (segments[0] === "orders" && segments[1] !== undefined) {
         wss.handleUpgrade(req, socket, head, (ws) => {
-          wss.emit("connection", ws, req);
+          console.log('New Order WebSocket connection');
+          const orderId = segments[1]; // Extract order ID from the URL
+          handleOrderRequest(ws, orderId); // Call the order handling function
         });
       } else {
         console.log("websocket closed");

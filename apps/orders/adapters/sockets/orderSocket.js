@@ -1,4 +1,4 @@
-const OrderService = require('../services/orderService'); // Assume you have a service to get order data
+const OrderService = require('../../services/orderService'); // Assume you have a service to get order data
 
 const handleOrderRequest = (ws, orderId) => {
     const fetchOrder = async () => {
@@ -15,7 +15,6 @@ const handleOrderRequest = (ws, orderId) => {
             ws.close(); // Close the connection after sending the error message
         }
     };
-
     fetchOrder();
 };
 
