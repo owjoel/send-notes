@@ -1,11 +1,11 @@
 terraform {
   backend "s3" {
-    bucket = "onlynotes-tf-state-production"
-    key    = "state/prod/terraform.tfstate"
+    bucket = "onlynotes-tf-state-management"
+    key    = "state/terraform.tfstate"
     region = "ap-southeast-1"
     encrypt = true
 
-    dynamodb_table = "onlynotes_tf-state-production_state-lock"
+    dynamodb_table = "onlynotes_tf-state-lock-management"
   }
 
   required_providers {
@@ -15,6 +15,7 @@ terraform {
     }
   }
 }
+
 
 # Configure the AWS Provider
 provider "aws" {

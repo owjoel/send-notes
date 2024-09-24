@@ -1,20 +1,33 @@
+import json
 import os
+import time
+import logging
 from dotenv import load_dotenv
-from flask import Flask, flash, jsonify, redirect, request, make_response, url_for
+from flask import Flask, jsonify, request, Request
 from openai import APIConnectionError, InternalServerError, OpenAI, NotFoundError
 
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
-#Obtain environment variables
+# Obtain environment variables
 load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_KEY") 
 VERIFIER_ASSISTANT_ID = os.getenv("VERIFIER_ASSISTANT_ID")
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID")
 
 # Specify global variables
-UPLOAD_FOLDER = '/uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg'}
+API_HEADER = '/api'
+UPLOAD_FOLDER = os.getcwd() + '/uploads'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'json', 'xlsx', 'doc', 'docx', 'ppt', 'pptx'}
+MAX_COMPLETION_TOKENS = 50
+
+# Specify common errors
+fileNotUploadedError = "No file uploaded error"
+invalidFileFormat = f"Filename cannot be empty or file extension is not allowed. Allowed extensions: {ALLOWED_EXTENSIONS}"
+
+# Create uploads folder if not present
+if not os.path.exists(UPLOAD_FOLDER): 
+    os.mkdir(UPLOAD_FOLDER)
 
 # Verify credentials with OpenAI
 client = OpenAI(api_key=OPENAI_KEY)
@@ -23,59 +36,170 @@ client = OpenAI(api_key=OPENAI_KEY)
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/health")
+
+@app.route(API_HEADER + "/health")
 def health_check():
-    return jsonify({"message": "Verify Service is healthy"})
+    return jsonify({"message": "Verify Service is healthy"}), 200
+
 
 # Function to check filename and decide if its 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/upload", methods=["POST"])
-def upload_file():
 
+def retrieve_and_save_file(request: Request): 
     # Retrieve the file
     if 'file' not in request.files:
-        raise ValueError("No file found")
+        print(fileNotUploadedError)
+        return jsonify({"message", fileNotUploadedError}), 400
     file = request.files['file']
-
     # Check if filename is valid
     if file.filename == '' or not allowed_file(file.filename):
-        raise ValueError("Invalid filename / filetype")
-    
+        print(invalidFileFormat)
+        return jsonify({"message": invalidFileFormat}), 400
     # Save the file if valid
+    filename = secure_filename(file.filename)
+    path = UPLOAD_FOLDER + "/" + filename
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        print(os.getcwd() + UPLOAD_FOLDER + "/" + filename)
-        file.save(os.getcwd() + UPLOAD_FOLDER + "/" + filename)
+        file.save(path)
+    return path
 
-    # # Create path to temp file
-    # path = f"{UPLOAD_FOLDER}/{filename}"
 
-    # # Upload file onto OpenAI
-    # file_to_upload = open(path, "rb")
+def upload_file_to_openai(path: str):
+    # Upload file onto OpenAI
+    file_to_upload = open(path, "rb")
+    # If file is not found, return from function
+    if file_to_upload is None: 
+        print("File not found in local directory")
+        return None
+    file = client.files.create(file=file_to_upload, purpose="assistants")
+    vector_store_file = client.beta.vector_stores.files.create(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
+    time.sleep(0.5)
+    print(f"Vector Store File Run Status: {vector_store_file.status}")
+    while vector_store_file.status != "completed":
+        # Handle failed file upload by reuploading the file
+        if vector_store_file.status == "cancelled" or vector_store_file.status == "failed":
+            print("Vector Store File upload failed. Retrying...")
+            vector_store_file = client.beta.vector_stores.files.create(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
+        time.sleep(0.5)
+        #Re-retrieve file status
+        vector_store_file = client.beta.vector_stores.files.retrieve(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
+        logging.debug(f"Vector Store File Run Status: {vector_store_file.status}")
+    # Close the file_to_upload
+    file_to_upload.close()
+    return file
 
-    # # If file is not found, return from function
-    # if file_to_upload is None: 
-    #     print("File not found in local directory")
-    #     return None, None, 0
-    
-    # file = client.files.create(file=file_to_upload, purpose="assistants")
-    # vector_store_file = client.beta.vector_stores.files.create(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
-    # time.sleep(0.5)
-    # print(f"Vector Store File Run Status: {vector_store_file.status}")
-    # while vector_store_file.status != "completed":
-    #     # Handle failed file upload by reuploading the file
-    #     if vector_store_file.status == "cancelled" or vector_store_file.status == "failed":
-    #         print("Vector Store File upload failed. Retrying...")
-    #         vector_store_file = client.beta.vector_stores.files.create(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
-    #     time.sleep(0.5)
-    #     #Re-retrieve file status
-    #     vector_store_file = client.beta.vector_stores.files.retrieve(file_id=file.id, vector_store_id=VECTOR_STORE_ID)
-    #     print(f"Vector Store File Run Status: {vector_store_file.status}")
 
-    return jsonify({"message": "File is successfully uploaded to OpenAI"})
+def delete_file_from_local(path: str):
+    if os.path.exists(path):
+        os.remove(path)
+    else:
+        print("The file does not exist")
+
+def create_run(thread_id: str):
+    try: 
+        # Create run
+        run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=VERIFIER_ASSISTANT_ID, max_completion_tokens=MAX_COMPLETION_TOKENS)
+        time.sleep(0.5)
+        print(f"Verifier Run Status: {run.status}")
+        # Ensure that the run has been completed before moving on
+        while run.status != "completed":
+            # Handle incomplete run status
+            if run.status == "incomplete":
+                print(f"Verifier Run Status: Fixing {run.status} run status...")
+                # Add new message to run again
+                client.beta.threads.messages.create(
+                    thread_id=thread_id,
+                    role="user",
+                    content="Please ensure that response is in the JSON format is kept."
+                )
+                # Start a new run
+                run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=VERIFIER_ASSISTANT_ID, max_completion_tokens=MAX_COMPLETION_TOKENS)
+            elif run.status == "failed":
+                print(f"Verifier Run Status: '{run.last_error.code}'-'{run.last_error.message}'. Fixing {run.status} run status...")
+                # Identify whats the error
+                if (run.last_error.code == "rate_limit_exceeded"):
+                    print("Verifier Run Status: {run.last_error.code}, Sleeping for 1min before trying again...")
+                    time.sleep(60)
+                # Start a new run
+                run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=VERIFIER_ASSISTANT_ID, max_completion_tokens=MAX_COMPLETION_TOKENS)
+            elif run.status == "expired":
+                print(f"Verifier Run Status: Fixing {run.status} run status...")
+                # Start a new run
+                run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=VERIFIER_ASSISTANT_ID, max_completion_tokens=MAX_COMPLETION_TOKENS)
+            else: 
+                run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+        time.sleep(0.5)
+        # Print run status
+        print(f"Verifier Run Status: {run.status}")
+        # Returns from function once run has completed
+        if run.status == "completed": return
+        else: raise ValueError("Verifier could not complete")
+    except InternalServerError: 
+        print("OpenAI has experienced some internal server error. Retrying...")
+    except APIConnectionError:
+        print("OpenAI has experienced difficulties connecting to API. Retrying...")
+
+
+def run_assistant(file):
+    if file is None: raise ValueError(fileNotUploadedError)
+    # Create messages
+    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions and less than 50 tokens.'''}]
+    # Create thread to run
+    thread = client.beta.threads.create(messages=messages)
+    # Create run
+    create_run(thread_id=thread.id)
+    # Retrieve the latest message
+    messages = client.beta.threads.messages.list(thread_id=thread.id)
+    while (True):
+        # Obtain response from messages
+        response = messages.data[0]
+        new_message = response.content[0].text.value
+        # Check if there is the common JSON parsing error
+        if new_message.startswith("```json"): 
+            print("Debug: Remove ```json")
+            new_message = new_message[7:]
+        if new_message.endswith("```"): 
+            print("Debug: Remove ```")
+            new_message = new_message[:len(new_message) - 3]
+        print(f"Verifier message: {new_message}")
+        # Jsonify output
+        try:
+            # Attempt to jsonify output
+            json_response: dict = json.loads(new_message)
+            if "verified" not in json_response.keys() or json_response['verified'] is None:
+                print("Verified field not found in JSON output.")
+                client.beta.threads.messages.create(thread_id=thread.id, role="user", content=f'''Please follow JSON format in system instructions.''')
+                create_run(thread_id=thread.id)
+            elif json_response['verified'] not in ["true", "false"]:
+                print("Verified field does not contain desired outputs.")
+                client.beta.threads.messages.create(thread_id=thread.id, role="user", content=f'''Verified field in JSON should only be "true" or "false".''')
+                create_run(thread_id=thread.id)
+            else:
+                return json_response
+            
+        except json.JSONDecodeError:
+            print("Error found when parsing response not in JSON format. Retrying...")
+
+
+def delete_file_from_vector_store(file):
+    client.files.delete(file_id=file.id)
+
+
+@app.route(API_HEADER + "/upload", methods=["POST"])
+def upload_file():
+    # Retrieve file from request and save to uploads dir
+    path = retrieve_and_save_file(request=request)
+    # Upload file to OpenAI
+    file = upload_file_to_openai(path=path)
+    # Delete file from uploads folder
+    delete_file_from_local(path=path)
+    # Run prompt with assistant
+    json_response = run_assistant(file=file)
+    # Delete file from vector store
+    delete_file_from_vector_store(file=file)
+    return jsonify({"message": json_response['verified']}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True)
