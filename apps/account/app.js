@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -11,6 +12,11 @@ var callbackRouter = require('./routes/auth.route');
 
 var app = express();
 // const port = PORT || 5000;
+// Allow requests from your frontend URL
+app.use(cors({
+  origin: process.env.frontend_cors,
+  credentials: true,
+}));
 
 app.use(express.json());
 
