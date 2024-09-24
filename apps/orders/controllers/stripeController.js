@@ -12,11 +12,11 @@ async function stripeWebhook  (req, res){
         } else if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
             console.log('PaymentIntent succeeded:', paymentIntent);
-            await OrderService.updateOrderStatus(paymentIntent.id, 'successful');
+            await OrderService.updateOrderStatus(paymentIntent.metadata._id, 'successful');
 
         } else if (event.type === 'payment_intent.payment_failed') {
             const paymentIntent = event.data.object;
-            await OrderService.updateOrderStatus(paymentIntent.id, 'failed');
+            await OrderService.updateOrderStatus(paymentIntent.metadata._id, 'failed');
             console.log('PaymentIntent failed:', paymentIntent);
         }
         res.json({ received: true });

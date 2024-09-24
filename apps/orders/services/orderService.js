@@ -7,20 +7,10 @@ class OrderService {
     static async createOrder(orderData) {
         console.log(orderData);
         try {
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount : orderData.orderPrice,
-                currency: 'sgd',
-                customer:orderData.customerId,
-                payment_method_types: ['card']
-            });
-
             const data = {
                 ...orderData,
-                stripeTransactionId: paymentIntent.id,
                 orderStatus:"validating"
             }
-
-
             const order = new Order(data);
             await order.save();
             publishOrderCreated(order._id, order)
@@ -32,6 +22,24 @@ class OrderService {
         } catch (error) {
             console.log(error);
             throw new Error('Internal server error');
+        }
+    }
+
+    static async createPaymentIntent(orderData){
+        try {
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount : orderData.orderPrice,
+                currency: 'sgd',
+                customer:orderData.customerId,
+                payment_method_types: ['card'],
+                metadata: {
+                    orderId: orderData._id
+                }
+            });
+            await this.updateOrderStatus(orderData._id,'processing');
+
+        } catch(error) {
+                    throw error;
         }
     }
 
@@ -58,10 +66,10 @@ class OrderService {
             throw new Error('Internal server error');
         }
     }
-    static async updateOrderStatus(paymentIntentId, status) {
+    static async updateOrderStatus(orderId, status) {
         try {
             const updatedOrder= await Order.findOneAndUpdate(
-                { stripeTransactionId: paymentIntentId },
+                { _id: orderId },
                 { $set: { orderStatus: `${status}` } },
                 { new: true }
             );
