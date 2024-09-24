@@ -8,7 +8,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const WebSocket = require('ws');
 const cors = require('cors');
 
 // App Dependencies
@@ -17,40 +16,44 @@ const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
 const connectMQ = require('./config/events');
-const { findById } = require('./services/orderService');
+const setupWebsocket = require('./sockets/index');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
-
+const wss = setupWebsocket(server)
 
 // view engine setup
 connectMQ();
 connectDB();
+// server.on('upgrade', (req, socket, head) => {
+//     wss.handleUpgrade(req, socket, head, (ws) => {
+//         wss.emit('connection', ws, req);
+//     });
+// });
 
+// server.on('upgrade', (req, socket, head) => {
+//   const pathname = url.parse(req.url).pathname;
+//   const segments = pathname.split('/').filter(seg => seg !== '');
+//   const order = findById(segments[1]);
+//   if (segments[0] === "orders" && order) {
+//     wss.handleUpgrade(req, socket, head, (ws) => {
+//       wss.emit('connection', ws, req);
+//
+//     })
+//   } else {
+//     console.log('websocket closed');
+//     socket.destroy();
+//   }
+// })
 
-server.on('upgrade', (req, socket, head) => {
-  const pathname = url.parse(req.url).pathname;
-  const segments = pathname.split('/').filter(seg => seg !== '');
-  const order = findById(segments[1]);
-  if (segments[0] === "orders" && order) {
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      wss.emit('connection', ws, req);
-    })
-  } else {
-    console.log('websocket closed');
-    socket.destroy();
-  }
-})
-
-wss.on('connection', (ws) => {
-  console.log('socket created');
-  ws.send('hello world!');
-  ws.on('message', (msg) => {
-    console.log(msg.toString());
-    ws.send(JSON.stringify({"status": 200, "msg": "RECEIVED"}));
-  })
-})
+// wss.on('connection', (ws) => {
+//   console.log('socket created');
+//   ws.send('hello world!');
+//   ws.on('message', (msg) => {
+//     console.log(msg.toString());
+//     ws.send(JSON.stringify({"status": 200, "msg": "RECEIVED"}));
+//   })
+// })
 
 app.use(logger('dev'));
 
@@ -58,7 +61,6 @@ app.use(logger('dev'));
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true,
-
 }));
 //body parse is for stripe webhook
 app.use(

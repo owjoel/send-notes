@@ -40,7 +40,7 @@ function handleEvent(message, fn) {
 
 async function notesFoundHandler(data) {
   console.log(data);
-  await OrderService.updateOrderStatus(data, 'processing')
+  await OrderService.createPaymentIntent(data)
 }
 
 async function paymentStatusHandler(data) {
