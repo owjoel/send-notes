@@ -1,11 +1,14 @@
 require('dotenv').config();
 // External Dependencies
-var createError = require('http-errors');
+const http = require('http')
+const url = require('url');
+const createError = require('http-errors');
 const bodyParser = require("body-parser");
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const WebSocket = require('ws');
 
 // App Dependencies
 const healthRouter = require('./routes/health');
@@ -13,15 +16,39 @@ const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
 const connectMQ = require('./config/events');
-const { AWSClient } = require('./adapters/events/aws');
+const { findById } = require('./services/orderService');
 
-var app = express();
-// AWSClient()
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ noServer: true });
 
 // view engine setup
 connectMQ();
 connectDB();
 
+
+server.on('upgrade', (req, socket, head) => {
+  const pathname = url.parse(req.url).pathname;
+  const segments = pathname.split('/').filter(seg => seg !== '');
+  const order = findById(segments[1]);
+  if (segments[0] === "orders" && order) {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit('connection', ws, req);
+    })
+  } else {
+    console.log('websocket closed');
+    socket.destroy();
+  }
+})
+
+wss.on('connection', (ws) => {
+  console.log('socket created');
+  ws.send('hello world!');
+  ws.on('message', (msg) => {
+    console.log(msg.toString());
+    ws.send(JSON.stringify({"status": 200, "msg": "RECEIVED"}));
+  })
+})
 
 app.use(logger('dev'));
 app.use(
@@ -56,6 +83,10 @@ app.use(function(err, req, res) {
     message: err.message,
     error: err
   });
+});
+
+server.listen(3000, () => {
+  console.log('Server listening on port 3000');
 });
 
 module.exports = app;
