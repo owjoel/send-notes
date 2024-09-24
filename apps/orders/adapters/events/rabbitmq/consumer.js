@@ -1,5 +1,6 @@
 const amqp = require("amqplib");
-
+const OrderService = require("../../../services/orderService")
+const {publishOrderProcessing} = require("./producer");
 let ch;
 const notesFoundQ = 'notes-found';
 const paymentCompletedQ = 'payment-completed';
@@ -24,7 +25,7 @@ async function configConsumer() {
 }
 
 const handleNotesFoundEvent = (message) => {
-  handleEvent(message, test);
+  handleEvent(message, notesFoundHandler);
 }
 
 const handlePaymentEvent = (message) => {
@@ -37,7 +38,12 @@ function handleEvent(message, fn) {
   ch.ack(message);
 }
 
-function test(data) {
+async function notesFoundHandler(data) {
+  console.log(data);
+  await OrderService.updateOrderStatus(data, 'processing')
+}
+
+async function paymentStatusHandler(data) {
   console.log(data);
 }
 

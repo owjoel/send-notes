@@ -9,6 +9,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const WebSocket = require('ws');
+const cors = require('cors');
 
 // App Dependencies
 const healthRouter = require('./routes/health');
@@ -21,6 +22,7 @@ const { findById } = require('./services/orderService');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
+
 
 // view engine setup
 connectMQ();
@@ -51,6 +53,14 @@ wss.on('connection', (ws) => {
 })
 
 app.use(logger('dev'));
+
+// Allow requests from your frontend URL
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+
+}));
+//body parse is for stripe webhook
 app.use(
     bodyParser.json({
       verify: function(req, res, buf) {
@@ -63,7 +73,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//body parse is for stripe webhook
 app.use('/health', healthRouter);
 app.use('/orders', orderRouter);
 app.use('/stripe', stripeRouter);

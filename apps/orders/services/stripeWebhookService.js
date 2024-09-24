@@ -4,7 +4,6 @@ const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET
 
 class StripeService {
     static async paymentIntentListener (req) {
-        console.log("Entered stripe webhook listener")
         const sig = req.headers['stripe-signature'];
         try {
             return await stripe.webhooks.constructEvent(req.rawBody, sig, WEBHOOK_SECRET);

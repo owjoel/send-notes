@@ -1,25 +1,33 @@
 package cs302.notes.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import cs302.notes.data.request.NotesRequest;
 import cs302.notes.data.response.DefaultResponse;
 import cs302.notes.data.response.Response;
+import cs302.notes.exceptions.InvalidJsonFormatException;
 import cs302.notes.service.services.NotesService;
+import cs302.notes.service.services.StorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
 public class NotesController {
 
     private final NotesService notesService;
+    private final StorageService storageService;
 
     //Setter Injection
     @Autowired
-    public NotesController(NotesService notesService) {
+    public NotesController(NotesService notesService, StorageService storageService) {
         this.notesService = notesService;
+        this.storageService = storageService;
     }
 
     @GetMapping("")
@@ -35,10 +43,12 @@ public class NotesController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/notes")
-    public ResponseEntity<Response> createNotes(@Valid @RequestBody NotesRequest request) {
-        Response response = notesService.createNotes(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PostMapping(value = "/notes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request) {
+        String s3Url = storageService.uploadFile(request.getFile(), request.getFkAccountOwner());
+        request.setUrl(s3Url);
+        Response notesResponse = notesService.createNotes(request);
+        return new ResponseEntity<>(notesResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("/notes/{notesId}")
