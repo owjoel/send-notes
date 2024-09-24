@@ -43,9 +43,8 @@ server.on('upgrade', (req, socket, head) => {
   }
 })
 
-wss.on('connection', (ws) => {
-  console.log('socket created');
-  ws.send('hello world!');
+wss.on('connection', (ws, req) => {
+  console.log('socket created with client ' + req.socket.remoteAddress);
   ws.on('message', (msg) => {
     console.log(msg.toString());
     ws.send(JSON.stringify({"status": 200, "msg": "RECEIVED"}));
