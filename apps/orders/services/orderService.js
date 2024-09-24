@@ -54,10 +54,8 @@ class OrderService {
             throw new Error('Internal server error');
         }
     }
-    static async updateOrderStatus(data, status) {
+    static async updateOrderStatus(paymentIntentId, status) {
         try {
-
-            const paymentIntentId = data.stripeTransactionId
             const updatedOrder= await Order.findOneAndUpdate(
                 { stripeTransactionId: paymentIntentId },
                 { $set: { orderStatus: `${status}` } },

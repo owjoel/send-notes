@@ -19,7 +19,7 @@ async function createOrder(req, res) {
   // const { orderId, stripeTransactionId, noteId, buyerEmail, orderStatus, orderPrice } = req.body;
   try {
     const order = await OrderService.createOrder(req.body);
-    res.status(201).json({ message: 'Order created successfully', order });
+    res.status(201).json({ message: 'Order created successfully', client_secret: order });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

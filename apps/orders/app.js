@@ -14,9 +14,11 @@ const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
 const connectMQ = require('./config/events');
 const { AWSClient } = require('./adapters/events/aws');
+const cors = require('cors');
 
 var app = express();
 // AWSClient()
+
 
 // view engine setup
 connectMQ();
@@ -25,6 +27,12 @@ connectDB();
 
 app.use(logger('dev'));
 
+// Allow requests from your frontend URL
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+
+}));
 //body parse is for stripe webhook
 app.use(
     bodyParser.json({
