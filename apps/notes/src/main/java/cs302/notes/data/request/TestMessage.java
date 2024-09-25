@@ -1,4 +1,4 @@
-package cs302.notes.data.messages;
+package cs302.notes.data.request;
 
 import lombok.Data;
 
