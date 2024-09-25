@@ -4,7 +4,7 @@ const app = express();
 app.use(cookieParser());
 
 const {exchangeCode, refreshTokens} = require("../services/auth.service");
-
+const MILISECONDS_IN_SECONDS = 1000;
 
 async function auth(req, res){
     const { code } = req.query;
@@ -25,18 +25,31 @@ async function auth(req, res){
         sameSite: 'Strict'
     });
 
+
     res.cookie('refresh_token', tokens["refresh_token"], {
         httpOnly: true,
         secure: true,
         sameSite: 'Strict'
     });
 
+    const tokenIssuedAtInSeconds = Date.now();
+    // const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
+    const tokenMaxAge = tokenIssuedAtInSeconds + 10 * 1000
+
+
+    res.cookie('access_token_expire', tokenMaxAge, {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'Strict'
+    });
 
     return res.status(response.status).json()
 }
 
 async function refreshToken(req, res){
-    const { refreshToken } = req.query;
+
+    const refreshToken = req.cookies.refresh_token;
+
 
     const tokens = await refreshTokens(refreshToken);
 
@@ -48,6 +61,17 @@ async function refreshToken(req, res){
 
     res.cookie('access_token', tokens["access_token"], {
         httpOnly: true,
+        secure: true,
+        sameSite: 'Strict'
+    });
+
+    const tokenIssuedAtInSeconds = Date.now();
+    // const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
+    const tokenMaxAge = tokenIssuedAtInSeconds + 10 * 1000
+
+
+    res.cookie('access_token_expire', tokenMaxAge, {
+        httpOnly: false,
         secure: true,
         sameSite: 'Strict'
     });
