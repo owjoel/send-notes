@@ -1,5 +1,5 @@
 var express = require('express');
-const {callback, refreshToken, authTest} = require("../controllers/callback");
+const {callback, refreshToken, authTest} = require("../controllers/auth");
 
 var router = express.Router();
 

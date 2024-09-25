@@ -6,7 +6,7 @@ app.use(cookieParser());
 const {exchangeCode, refreshTokens} = require("../services/auth.service");
 
 
-async function callback(req, res){
+async function auth(req, res){
     const { code } = req.query;
 
     const response = await exchangeCode(code);
@@ -72,4 +72,4 @@ async function authTest(req, res){
 
 
 
-module.exports = {callback, refreshToken, authTest}
+module.exports = {callback: auth, refreshToken, authTest}
