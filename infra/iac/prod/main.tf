@@ -9,6 +9,8 @@
 #}
 
 module "ecr" {
+  # Only create in production or staging
+  count = (terraform.workspace == "production" || terraform.workspace == "staging") ? 1 : 0
   source = "./ecr"
   environment = var.environment
   app_name = var.app_name
