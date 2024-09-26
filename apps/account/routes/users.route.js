@@ -1,9 +1,10 @@
 var express = require('express');
-const {getSessionData} = require("../controllers/user");
+const {getSessionData, getUser} = require("../controllers/user");
 
 var router = express.Router();
 
 router.get('/', getSessionData);
+router.get('/:id',getUser)
 
 
 
