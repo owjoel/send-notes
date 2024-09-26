@@ -2,6 +2,8 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const {jwtDecode} = require('jwt-decode')
 const app = express();
+const {retrieveUser} = require("../services/user.service");
+
 app.use(cookieParser());
 
 async function getSessionData(req, res){
@@ -25,9 +27,24 @@ async function getSessionData(req, res){
     }
 }
 
+async function getUser(req, res){
+    try {
+        const sub  = req.params.id;
+
+        if (!sub){
+            return res.status(404).json({"error": "no id found"})
+        }
+
+        const user = await retrieveUser(sub)
+        return res.status(200).json(user)
+    }catch (e){
+        return res.status(404).json()
+    }
+}
 
 
 
 
 
-module.exports = {getSessionData}
+
+module.exports = {getSessionData, getUser}
