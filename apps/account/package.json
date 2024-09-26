@@ -7,6 +7,7 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.658.1",
     "account": "file:",
     "amqplib": "^0.10.4",
     "cookie-parser": "~1.4.4",
