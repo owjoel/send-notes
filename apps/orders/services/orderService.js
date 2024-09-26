@@ -5,11 +5,10 @@ const {publishOrderCreated, publishOrderProcessing} = require("../adapters/event
 // Create new order
 class OrderService {
     static async createOrder(orderData) {
-        console.log(orderData);
         try {
             const data = {
                 ...orderData,
-                orderStatus:"validating"
+                orderStatus:"created"
             }
             const order = new Order(data);
             await order.save();
@@ -36,13 +35,28 @@ class OrderService {
                     orderId: orderData._id
                 }
             });
-            await this.updateOrderStatus(orderData._id,'processing');
+            await Order.findOneAndUpdate(
+                { _id: orderData._id },
+                { $set: { orderStatus: `processing` } },
+                { new: true }
+            );
 
+            return paymentIntent.client_secret;
         } catch(error) {
-                    throw error;
+            throw error;
         }
     }
-
+    // static async updateStripeId(stripeId) {
+    //     try {
+    //         const updatedOrder= await Order.findOneAndUpdate(
+    //             { _id: orderId },
+    //             { $set: { orderStatus: `${status}` } },
+    //             { new: true }
+    //         );
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // }
     static async findById(orderId) {
         try {
             return await Order.findById(orderId);
@@ -73,9 +87,9 @@ class OrderService {
                 { $set: { orderStatus: `${status}` } },
                 { new: true }
             );
-            if (status === 'processing') {
-                publishOrderProcessing(data._id, data);
-            }
+            // if (status === 'processing') {
+            //     publishOrderProcessing(data._id, data);
+            // }
             console.log('updated order', updatedOrder);
         } catch (error) {
             throw new Error('Internal server error');

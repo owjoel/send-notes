@@ -3,10 +3,14 @@ const OrderService = require('../../services/orderService'); // Assume you have 
 const handleOrderRequest = (ws, orderId) => {
     const fetchOrder = async () => {
         try {
-            const orderData = await OrderService.findById(orderId);
             // Send order data after a 10-second delay
-            setTimeout(() => {
-                ws.send(JSON.stringify(orderData)); // Sends order data
+
+            setTimeout(async () => {
+                const orderData = await OrderService.findById(orderId);
+                if (orderData.status === 'validated') {
+                    const client_secret = await OrderService.createPaymentIntent(orderId);
+                    ws.send(JSON.stringify(client_secret)); // Sends order data
+                }
                 ws.close(); // Close the connection after sending the data
             }, 10000);
         } catch (err) {
