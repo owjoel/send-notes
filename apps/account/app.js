@@ -8,7 +8,9 @@ const cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.route');
 var callbackRouter = require('./routes/auth.route');
+const configMQ = require('./events/rabbitmq/consumer');
 
+configMQ();
 
 var app = express();
 // const port = PORT || 5000;
