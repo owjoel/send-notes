@@ -40,3 +40,9 @@ EXPOSE 3000
 
 # Run the application in development mode
 CMD ["npm", "run", "dev"]
+
+################################################################################
+# Test target
+FROM base as test
+ENV NODE_ENV=test
+CMD ["npm", "test"]

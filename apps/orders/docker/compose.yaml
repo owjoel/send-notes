@@ -3,8 +3,19 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      target: production  # Or "development"
+      target: production
     environment:
-      NODE_ENV: production
+      NODE_ENV: production          # Set the environment to production
+      RABBITMQ_URL: amqp://rabbitmq:5672 # Connection string to RabbitMQ
+    depends_on:
+      - rabbitmq
     ports:
       - 80:80
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"     # AMQP port
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
