@@ -7,19 +7,18 @@
 var app = require('../app');
 var debug = require('debug')('orders:server');
 var http = require('http');
+const configSocket = require('../adapters/sockets/websocket');
 
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
-
 var server = http.createServer(app);
+
+app.set('port', port);
+configSocket(server);
+
 
 /**
  * Listen on provided port, on all network interfaces.

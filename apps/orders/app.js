@@ -1,14 +1,10 @@
 require('dotenv').config();
-// External Dependencies
-const http = require('http')
-const url = require('url');
 const createError = require('http-errors');
 const bodyParser = require("body-parser");
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const WebSocket = require('ws');
 const cors = require('cors');
 
 // App Dependencies
@@ -17,18 +13,13 @@ const orderRouter = require('./routes/order');
 const stripeRouter = require('./routes/stripe')
 const connectDB = require('./config/db');
 const connectMQ = require('./config/events');
-const { findById } = require('./services/orderService');
-const configSocket = require('./adapters/sockets/websocket');
 
 const app = express();
-const server = http.createServer(app);
-
 
 // view engine setup
 connectMQ();
 connectDB();
 
-configSocket(server);
 
 app.use(logger('dev'));
 
@@ -72,8 +63,8 @@ app.use(function(err, req, res) {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server listening on port 3000');
-});
+// server.listen(3000, () => {
+//   console.log('Server listening on port 3000');
+// });
 
 module.exports = app;
