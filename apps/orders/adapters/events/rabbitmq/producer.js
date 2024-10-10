@@ -29,8 +29,10 @@ function publishOrderCreated(id, data) {
   return publish(id, "created", data);
 }
 
-function publishOrderProcessing(id, data) {
-  return publish(id, "processing", data);
-}
 
-module.exports = { configProducer, publishOrderCreated, publishOrderProcessing };
+// not used yet, for logging purposes
+// function publishOrderProcessing(id, data) {
+//   return publish(id, "processing", data);
+// }
+
+module.exports = { configProducer, publishOrderCreated };

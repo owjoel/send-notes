@@ -1,22 +1,21 @@
 const Order = require('../models/Order');
 const stripe = require('../config/stripeConfig');
-const {publishOrderCreated, publishOrderProcessing} = require("../adapters/events/rabbitmq/producer");  // Import the configured Stripe instance
+const {publishOrderCreated} = require("../adapters/events/rabbitmq/producer");  // Import the configured Stripe instance
 
 // Create new order
 class OrderService {
     static async createOrder(orderData) {
-        console.log(orderData);
         try {
             const data = {
                 ...orderData,
-                orderStatus:"validating"
+                orderStatus:"created"
             }
-            const order = new Order(data);
+            const order = await new Order(data);
             await order.save();
             publishOrderCreated(order._id, order)
+
             return {
-                order_id: order._id,
-                client_secret: paymentIntent.client_secret,
+                status:200,
             };
             
         } catch (error) {
@@ -36,13 +35,17 @@ class OrderService {
                     orderId: orderData._id
                 }
             });
-            await this.updateOrderStatus(orderData._id,'processing');
+            await Order.findOneAndUpdate(
+                { _id: orderData._id },
+                { $set: { orderStatus: `processing` } },
+                { new: true }
+            );
 
+            return paymentIntent.client_secret;
         } catch(error) {
-                    throw error;
+            throw error;
         }
     }
-
     static async findById(orderId) {
         try {
             return await Order.findById(orderId);
@@ -58,10 +61,10 @@ class OrderService {
             throw new Error('Internal server error');
         }
     }
+
     static async update(orderId, updateData) {
         try {
             return await Order.findByIdAndUpdate(orderId, updateData, { new: true });
-
         } catch (error) {
             throw new Error('Internal server error');
         }
@@ -73,10 +76,12 @@ class OrderService {
                 { $set: { orderStatus: `${status}` } },
                 { new: true }
             );
-            if (status === 'processing') {
-                publishOrderProcessing(data._id, data);
-            }
             console.log('updated order', updatedOrder);
+            return {
+                status:200,
+                data: updatedOrder
+            };
+
         } catch (error) {
             throw new Error('Internal server error');
         }
