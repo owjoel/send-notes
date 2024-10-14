@@ -34,4 +34,4 @@ function publishOrderSuccessful(id, data) {
   return publish(id, "success", data);
 }
 
-module.exports = { configProducer, publishOrderCreated, publishOrderProcessing };
+module.exports = { configProducer, publishOrderCreated, publishOrderProcessing, publishOrderSuccessful };

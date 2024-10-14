@@ -1,5 +1,6 @@
 const StripeService = require('../services/stripeWebhookService')
 const OrderService = require('../services/orderService')
+const { publishOrderSuccessful } = require('../adapters/events/rabbitmq/producer')
 
 async function stripeWebhook  (req, res){
     try {
@@ -13,6 +14,8 @@ async function stripeWebhook  (req, res){
             const paymentIntent = event.data.object;
             console.log('PaymentIntent succeeded:', paymentIntent);
             await OrderService.updateOrderStatus(paymentIntent.metadata._id, 'successful');
+            order = await OrderService.findById(paymentIntent.metadata._id)
+            publishOrderSuccessful(paymentIntent.metadata._id, order)
 
         } else if (event.type === 'payment_intent.payment_failed') {
             const paymentIntent = event.data.object;
