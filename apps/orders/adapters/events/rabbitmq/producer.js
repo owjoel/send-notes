@@ -29,9 +29,6 @@ function publishOrderCreated(id, data) {
   return publish(id, "created", data);
 }
 
-function publishOrderProcessing(id, data) {
-  return publish(id, "processing", data);
-}
 
 function publishOrderSuccessful(id, data) {
   return publish(id, "success", data);

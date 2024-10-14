@@ -9,7 +9,7 @@ variable "arn-acm_cognito-domain" {
 }
 
 variable "cognito_callback_url" {
-  type = string
+  type = list(string)
   description = "Cognito callback url"
 }
 

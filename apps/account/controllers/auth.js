@@ -1,10 +1,18 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+
+const dotenv = require('dotenv')
+
 const app = express();
+
+
+
 app.use(cookieParser());
+dotenv.config()
 
 const {exchangeCode, refreshTokens} = require("../services/auth.service");
 const {jwtDecode} = require("jwt-decode");
+const {CognitoJwtVerifier} = require("aws-jwt-verify");
 const MILISECONDS_IN_SECONDS = 1000;
 
 async function auth(req, res){
@@ -136,8 +144,31 @@ async function logout(req, res){
     }
 }
 
+async function tokenValid(req,res){
+
+    const accessToken = req.params.accessToken;
+// Verifier that expects valid access tokens:
+    const verifier = CognitoJwtVerifier.create({
+        userPoolId: process.env["cognito_userpool-id"],
+        tokenUse: "access",
+        clientId: process.env["cognito_client-id"],
+    });
+
+    try {
+        const payload = await verifier.verify(
+            accessToken // the JWT as string
+        );
+        console.log("Token is valid. Payload:", payload);
+        return res.status(200).json({valid: true})
+    } catch {
+        console.log("Token not valid!");
+        return res.status(400).json({valid: false})
+
+    }
+}
 
 
 
 
-module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated}
+
+module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated, tokenValid}
