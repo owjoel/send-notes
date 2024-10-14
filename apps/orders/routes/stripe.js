@@ -1,12 +1,12 @@
 const express = require('express');
-const stripeController = require("../controllers/stripeController");
+const { stripeWebhook } = require("../controllers/stripeController");
 const router = express.Router();
 
 
 
 
 
-router.post('/webhook', stripeController.stripeWebhook);
+router.post('/webhook', stripeWebhook);
 
 
 module.exports = router;
