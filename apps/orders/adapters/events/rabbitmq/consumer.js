@@ -7,7 +7,14 @@ const paymentCompletedQ = 'payment-completed';
 
 async function configConsumer() {
   try {
-    const conn = await amqp.connect();
+    const conn = await amqp.connect({
+      protocol: process.env.RABBITMQ_PROTOCOL,
+      username: process.env.RABBITMQ_USER,
+      password: process.env.RABBITMQ_PASSWORD,
+      hostname: process.env.RABBITMQ_HOST,
+      port: 5671,
+    });
+    console.log(`AWSAMQP Connected: ${process.env.RABBITMQ_HOST}`)
     ch = await conn.createChannel();
     ch.assertExchange('orders', 'topic');
 

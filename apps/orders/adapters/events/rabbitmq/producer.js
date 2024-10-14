@@ -14,7 +14,7 @@ async function configProducer() {
 
 function publish(id, event, data) {
   try {
-    const rk = "orders." + event;
+    const rk = `orders.${event}`;
     ch.publish('orders', rk, Buffer.from(JSON.stringify(data)));
     console.log("Published %s event for transaction id: %s", event, id);
     return true;
@@ -31,6 +31,10 @@ function publishOrderCreated(id, data) {
 
 function publishOrderProcessing(id, data) {
   return publish(id, "processing", data);
+}
+
+function publishOrderSuccessful(id, data) {
+  return publish(id, "success", data);
 }
 
 module.exports = { configProducer, publishOrderCreated, publishOrderProcessing };
