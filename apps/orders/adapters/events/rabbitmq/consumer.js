@@ -5,6 +5,12 @@ let ch;
 const notesFoundQ = 'notes-found';
 const paymentCompletedQ = 'payment-completed';
 
+// Load environment variables
+// if (process.env.NODE_ENV === 'production') {
+//   dotenv.config({ path: '.env.production' });
+// } else {
+//   dotenv.config({ path: '.env.development' });
+// }
 async function configConsumer() {
   try {
     const conn = await amqp.connect({
@@ -12,7 +18,7 @@ async function configConsumer() {
       username: process.env.RABBITMQ_USER,
       password: process.env.RABBITMQ_PASSWORD,
       hostname: process.env.RABBITMQ_HOST,
-      port: 5671,
+      port: process.env.RABBITMQ_PORT,
     });
     console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`)
     ch = await conn.createChannel();
