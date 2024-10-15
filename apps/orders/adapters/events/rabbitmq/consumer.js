@@ -14,7 +14,7 @@ async function configConsumer() {
       hostname: process.env.RABBITMQ_HOST,
       port: 5671,
     });
-    console.log(`AWSAMQP Connected: ${process.env.RABBITMQ_HOST}`)
+    console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`)
     ch = await conn.createChannel();
     ch.assertExchange('orders', 'topic');
 

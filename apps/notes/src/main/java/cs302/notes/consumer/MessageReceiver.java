@@ -2,6 +2,7 @@ package cs302.notes.consumer;
 
 import cs302.notes.models.OrderCreated;
 import cs302.notes.exceptions.NotesNotFoundException;
+import cs302.notes.models.OrderSuccess;
 import cs302.notes.producer.MessageSender;
 import cs302.notes.repository.NotesRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -25,6 +26,15 @@ public class MessageReceiver {
             messageSender.publishNotesFound(request);
         } catch (NotesNotFoundException e) {
             messageSender.publishNotesMissing(request);
+        }
+    }
+
+    @RabbitListener(queues = "${rabbitmq.orders.success.queue}")
+    public void receiveMessage(final OrderSuccess request) {
+        try {
+            System.out.println("Forwarded signed url for notification");
+        } catch (NotesNotFoundException e) {
+            System.out.println("Failed to send out notification");
         }
     }
 }

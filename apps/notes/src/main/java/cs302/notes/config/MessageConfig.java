@@ -19,14 +19,22 @@ public class MessageConfig {
     private String topicExchangeName;
 
     @Value("${rabbitmq.orders.created.queue}")
-    private String queueName;
+    private String createQueueString;
+
+    @Value("${rabbitmq.orders.success.queue}")
+    private String successQueueString;
     
     @Value("${rabbitmq.orders.created.rk}")
     private String orderCreatedRk;
 
     @Bean
-    Queue queue() {
-        return new Queue(queueName, false);
+    Queue createQueue() {
+        return new Queue(createQueueString, false);
+    }
+
+    @Bean
+    Queue successQueue() {
+        return new Queue(successQueueString, false);
     }
 
     @Bean
@@ -35,8 +43,12 @@ public class MessageConfig {
     }
 
     @Bean
-    Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(orderCreatedRk);
+    Binding binding1(Queue createQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(createQueue).to(exchange).with(orderCreatedRk);
+    }
+    @Bean
+    Binding binding2(Queue successQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(successQueue).to(exchange).with(orderCreatedRk);
     }
 
     @Bean

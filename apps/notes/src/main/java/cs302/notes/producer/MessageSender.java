@@ -24,6 +24,8 @@ public class MessageSender {
     @Value("${rabbitmq.orders.notes-missing.rk}")
     private String notesMissingRk;
 
+
+
     public void publishNotesMissing(OrderCreated message) {
         rabbitTemplate.convertAndSend(topicExchangeName, notesMissingRk, message);
     }

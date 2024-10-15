@@ -17,3 +17,5 @@ public class OrderCreated {
     private String orderStatus;
     private Integer orderPrice;
 }
+
+
