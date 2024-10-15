@@ -6,7 +6,7 @@
     "start": "node ./bin/www",
     "dev": "nodemon index.js",
     "test": "jest",
-    "docker-compose": " docker-compose -f ./docker/compose.yaml up --build",
+    "docker-compose": " docker-compose --env-file .env -f ./docker/compose.yaml up --build",
     "docker-build:production": "docker build --target production -t onlynotes-be:1.0.0-prod -f ./docker/Dockerfile .",
     "docker-build:development": "docker build --target development -t onlynotes-be:1.0.0-dev -f ./docker/Dockerfile ."
   },

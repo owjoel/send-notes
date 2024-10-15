@@ -7,12 +7,12 @@ services:
     environment:
       NODE_ENV: production
       RABBITMQ_URL: amqp://rabbitmq:5672
-      STRIPE_SECRET_KEY: your_stripe_secret_key
-      STRIPE_PUBLISHABLE_KEY: your_stripe_publishable_key
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     depends_on:
       - rabbitmq
     ports:
-      - 80:80
+      - 3000:3000
   rabbitmq:
     image: rabbitmq:management
     ports:
