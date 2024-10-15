@@ -37,6 +37,7 @@ function publishOrderCreated(id, data) {
 }
 
 function publishOrderSuccessful(id, data) {
+  console.log('published orderSuccessful event', data)
   return publish(id, "success", data);
 }
 
