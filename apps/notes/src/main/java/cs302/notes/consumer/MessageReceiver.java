@@ -33,7 +33,7 @@ public class MessageReceiver {
     public void receiveMessage(final OrderSuccess request) {
         try {
             System.out.println("Forwarded signed url for notification");
-        } catch (NotesNotFoundException e) {
+        } catch (Exception e) {
             System.out.println("Failed to send out notification");
         }
     }
