@@ -4,22 +4,24 @@ const { retrieveUser } = require("../../services/user.service");
 require('dotenv').config();
 
 let ch;
-const orderSuccessQ = 'order-success';
+const orderSuccessQ = 'order-email';
 
 async function configMQ() {
+  url = `${process.env.RABBITMQ_PROTOCOL}://` +
+    `${process.env.RABBITMQ_USERNAME}:` +
+    `${process.env.RABBITMQ_PASSWORD}@` +
+    `${process.env.RABBITMQ_HOST}:` +
+    `${process.env.RABBITMQ_PORT}`
   try {
-    const username = process.env.RABBITMQ_USERNAME
-    const password = process.env.RABBITMQ_PASSWORD
-    const hostname = process.env.RABBITMQ_HOSTNAME
-    const port = process.env.RABBITMQ_PORT
-    const url = `amqp://${username}:${password}@${hostname}:${port}/`
-
+    console.log(url)
     const conn = await amqp.connect(url);
+
+    console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`)
     ch = await conn.createChannel();
     ch.assertExchange("orders", "topic");
 
     await ch.assertQueue(orderSuccessQ);
-    ch.bindQueue(orderSuccessQ, 'orders', 'orders.success');
+    ch.bindQueue(orderSuccessQ, 'orders', 'orders.email');
     ch.consume(orderSuccessQ, handleOrderScuess)
 
   } catch (err) {
