@@ -5,8 +5,10 @@ services:
       dockerfile: docker/Dockerfile
       target: production
     environment:
-      NODE_ENV: production          # Set the environment to production
-      RABBITMQ_URL: amqp://rabbitmq:5672 # Connection string to RabbitMQ
+      NODE_ENV: production
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      STRIPE_SECRET_KEY: your_stripe_secret_key
+      STRIPE_PUBLISHABLE_KEY: your_stripe_publishable_key
     depends_on:
       - rabbitmq
     ports:
@@ -14,7 +16,7 @@ services:
   rabbitmq:
     image: rabbitmq:management
     ports:
-      - "5672:5672"     # AMQP port
+      - "5672:5672"
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
