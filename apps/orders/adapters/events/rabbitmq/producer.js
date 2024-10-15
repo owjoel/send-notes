@@ -31,7 +31,8 @@ function publishOrderCreated(id, data) {
 
 
 function publishOrderSuccessful(id, data) {
+  console.log('published orderSuccessful event', data)
   return publish(id, "success", data);
 }
 
-module.exports = { configProducer, publishOrderCreated, publishOrderProcessing, publishOrderSuccessful };
+module.exports = { configProducer, publishOrderCreated, publishOrderSuccessful };
