@@ -11,7 +11,37 @@ jest.mock('../../../adapters/events/rabbitmq/producer');
 jest.mock('amqplib'); // Mock the amqplib library
 
 describe('OrderService', () => {
-  // Tests createOrder
+  beforeEach(() => {
+    jest.clearAllMocks(); // Clear previous mocks before each test
+  });
+
+  describe('findAll', () => {
+    it('should return all orders', async () => {
+      const mockOrders = [
+        { _id: 'order1', orderStatus: 'validated' },
+        { _id: 'order2', orderStatus: 'processing' },
+      ];
+
+      // Mock the Order.find method to resolve with mockOrders
+      Order.find.mockResolvedValue(mockOrders);
+
+      const result = await OrderService.findAll();
+
+      // Assert that Order.find was called correctly
+      expect(Order.find).toHaveBeenCalledWith({});
+
+      // Assert that the result is as expected
+      expect(result).toEqual(mockOrders);
+    });
+
+    it('should throw an error if an exception occurs', async () => {
+      // Mock the Order.find method to reject with an error
+      Order.find.mockRejectedValue(new Error('Database error'));
+
+      await expect(OrderService.findAll()).rejects.toThrow('Internal server error');
+    });
+  });
+
   describe('createOrder', () => {
     let orderData, orderSaveMock;
     beforeEach(() => {
@@ -120,56 +150,9 @@ describe('OrderService', () => {
     });
   });
 
-  // describe('handleNotesFoundEvent', () => {
-  //   beforeEach(() => {
-  //     jest.clearAllMocks(); // Clear previous mock calls
-  //   });
-  //
-  //   it('should call updateOrderStatus with the parsed message data', async () => {
-  //     const mockMessage = {
-  //       content: Buffer.from(JSON.stringify({ _id: '66f18104467889b2731ddfa0' })),
-  //     };
-  //
-  //     const mockUpdatedOrder = {
-  //       _id: '66f18104467889b2731ddfa0',
-  //       orderStatus: 'validated',
-  //     };
-  //
-  //     // Mock the OrderService.updateOrderStatus method to resolve with updated order
-  //     OrderService.updateOrderStatus.mockResolvedValue({
-  //       status: 200,
-  //       data: mockUpdatedOrder,
-  //     });
-  //
-  //     // Call the handleNotesFoundEvent with the mock message
-  //     await handleNotesFoundEvent(mockMessage);
-  //
-  //     // Check that updateOrderStatus was called with the correct ID
-  //     expect(OrderService.updateOrderStatus).toHaveBeenCalledWith('66f18104467889b2731ddfa0', 'validated');
-  //   });
-  //
-  //   it('should handle errors thrown by the OrderService', async () => {
-  //     const mockMessage = {
-  //       content: Buffer.from(JSON.stringify({ _id: '66f18104467889b2731ddfa0' })),
-  //     };
-  //
-  //     // Mock the OrderService.updateOrderStatus method to reject with an error
-  //     OrderService.updateOrderStatus.mockRejectedValue(new Error('Database error'));
-  //
-  //     // Assert that handleNotesFoundEvent throws the expected error
-  //     await expect(handleNotesFoundEvent(mockMessage)).rejects.toThrow('Database error');
-  //   });
-  // });
-
   describe('updateOrderStatus', () => {
     const orderId = '66f18104467889b2731ddfa0';
     const status = 'validated';
-    let findOneAndUpdateMock;
-
-    beforeEach(() => {
-      findOneAndUpdateMock = jest.fn();
-      Order.findOneAndUpdate.mockImplementation(findOneAndUpdateMock);
-    });
 
     it('should update the order status and return the updated order', async () => {
       const mockUpdatedOrder = {
@@ -178,27 +161,24 @@ describe('OrderService', () => {
       };
 
       // Mock the findOneAndUpdate method to resolve with updated order
-      findOneAndUpdateMock.mockResolvedValue(mockUpdatedOrder);
+      Order.findOneAndUpdate.mockResolvedValue(mockUpdatedOrder);
 
       const result = await OrderService.updateOrderStatus(orderId, status);
 
-      // Assert that findOneAndUpdate was called correctly
-      expect(findOneAndUpdateMock).toHaveBeenCalledWith(
+      expect(Order.findOneAndUpdate).toHaveBeenCalledWith(
           { _id: orderId },
           { $set: { orderStatus: status } },
           { new: true }
       );
 
-      // Assert that the result is the expected updated order
       expect(result).toEqual({
-        status:200,
-        data:mockUpdatedOrder
+        status: 200,
+        data: mockUpdatedOrder,
       });
     });
 
     it('should throw an error if an exception occurs', async () => {
-      // Mock the findOneAndUpdate method to reject with an error
-      findOneAndUpdateMock.mockRejectedValue(new Error('Database error'));
+      Order.findOneAndUpdate.mockRejectedValue(new Error('Database error'));
 
       await expect(OrderService.updateOrderStatus(orderId, status)).rejects.toThrow('Internal server error');
     });
@@ -211,54 +191,43 @@ describe('OrderService', () => {
       customerId: '1'
     };
 
-    beforeEach(() => {
-      jest.clearAllMocks(); // Clear previous mocks before each test
-    });
+    it('should create a payment intent and update the order status', async () => {
+      const mockClientSecret = 'secret_testClientSecret';
 
-    it('should create a payment intent and update order status to processing', async () => {
-      const mockClientSecret = 'some_client_secret';
-
-      // Mock the Stripe payment intent creation
       stripe.paymentIntents.create.mockResolvedValue({
         client_secret: mockClientSecret
       });
 
-      // Mock the Order.findOneAndUpdate method
-      Order.findOneAndUpdate.mockResolvedValue(orderData);
+      Order.findOneAndUpdate.mockResolvedValue({ ...orderData, orderStatus: 'processing' });
 
       const result = await OrderService.createPaymentIntent(orderData);
 
-      // Assert that the payment intent was created with the correct parameters
       expect(stripe.paymentIntents.create).toHaveBeenCalledWith({
         amount: orderData.orderPrice,
         currency: 'sgd',
         customer: orderData.customerId,
         payment_method_types: ['card'],
         metadata: {
-          orderId: orderData._id
-        }
+          orderId: orderData._id,
+        },
       });
 
-      // Assert that the order status was updated
       expect(Order.findOneAndUpdate).toHaveBeenCalledWith(
           { _id: orderData._id },
-          { $set: { orderStatus: `processing` } },
+          { $set: { orderStatus: 'processing' } },
           { new: true }
       );
 
-      // Assert that the result is the client secret
       expect(result).toBe(mockClientSecret);
-
     });
 
     it('should throw an error if payment intent creation fails', async () => {
-      // Mock the Stripe payment intent creation to reject
       stripe.paymentIntents.create.mockRejectedValue(new Error('Payment intent creation failed'));
+
       await expect(OrderService.createPaymentIntent(orderData)).rejects.toThrow('Payment intent creation failed');
       expect(Order.findOneAndUpdate).not.toHaveBeenCalled();
     });
   });
-
 });
 
 

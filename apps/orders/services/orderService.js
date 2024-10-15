@@ -76,14 +76,14 @@ class OrderService {
                 { $set: { orderStatus: `${status}` } },
                 { new: true }
             );
-            console.log('updated order', updatedOrder);
+            // console.log('updated order', updatedOrder);
             return {
                 status:200,
                 data: updatedOrder
             };
 
         } catch (error) {
-            throw new Error('Internal server error');
+            throw new Error('Internal server error'); // Ensure this matches your test expectation
         }
     }
 
