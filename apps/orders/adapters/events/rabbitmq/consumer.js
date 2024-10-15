@@ -4,7 +4,6 @@ const {publishOrderProcessing} = require("./producer");
 let ch;
 const notesFoundQ = 'notes-found';
 const paymentCompletedQ = 'payment-completed';
-
 // Load environment variables
 // if (process.env.NODE_ENV === 'production') {
 //   dotenv.config({ path: '.env.production' });
@@ -26,7 +25,7 @@ async function configConsumer() {
 
     await ch.assertQueue(notesFoundQ);
     ch.bindQueue(notesFoundQ, 'orders', 'orders.notes.#');
-    ch.consume(notesFoundQ, handleNotesFoundEvent);
+    await ch.consume(notesFoundQ, handleNotesEvent);
 
     // await ch.assertQueue(paymentCompletedQ);
     // ch.bindQueue(paymentCompletedQ, 'orders', 'orders.payment.#');
@@ -37,10 +36,18 @@ async function configConsumer() {
   }
 }
 
-const handleNotesFoundEvent = (message) => {
-  handleEvent(message, notesFoundHandler);
-}
+const handleNotesEvent = (message) => {
+  const routingKey = message.fields.routingKey;
+  if (routingKey === 'orders.notes.found') {
+    console.log('notes found event')
+    handleEvent(message, notesFoundHandler);
 
+  } else if (routingKey === 'orders.notes.missing') {
+    console.log('notes missing event')
+    handleEvent(message, notesMissingHandler);
+
+  }
+}
 // const handlePaymentEvent = (message) => {
 //   handleEvent(message, test);
 // }
@@ -54,6 +61,10 @@ function handleEvent(message, fn) {
 async function notesFoundHandler(data) {
   console.log(data);
   await OrderService.updateOrderStatus(data._id, 'validated')
+}
+async function notesMissingHandler(data) {
+  console.log(data);
+  await OrderService.updateOrderStatus(data._id, 'cancelled')
 }
 
 // async function paymentStatusHandler(data) {
