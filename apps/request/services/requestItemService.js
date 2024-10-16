@@ -1,4 +1,5 @@
 const RequestItem = require('../models/RequestItem');
+const {publishRequestNotify} = require("../adapters/events/rabbitmq/producer");
 
 // Create new order
 
@@ -79,6 +80,37 @@ class RequestItemService {
             throw new Error('Internal server error');
         }
     }
+
+    static async notifyRequest(tag){
+
+        await RequestItem.exists({ tag: tag })
+            .catch((err) => {
+                throw new Error('Tag not found')
+            });
+
+        try {
+            const requestItems = await RequestItem.find({tag: tag});
+
+            let users = [];
+
+            for (let i = 0; i<requestItems.length; i++){
+                users.push(requestItems[i].userId)
+            }
+
+            const result = { users, tag };
+
+            publishRequestNotify(result)
+
+
+            return result
+
+
+        } catch (error) {
+            throw new Error('internal server error');
+        }
+
+    }
+
 }
 
 module.exports = RequestItemService;
