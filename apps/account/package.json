@@ -7,8 +7,7 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.658.1",
-    "@aws-sdk/client-sns": "^3.658.1",
+    "@aws-sdk/client-sns": "^3.670.0",
     "account": "file:",
     "amqplib": "^0.10.4",
     "aws-jwt-verify": "^4.0.1",

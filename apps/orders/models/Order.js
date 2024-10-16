@@ -3,9 +3,7 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
   stripeTransactionId: {
     type: String,
-    required: true,
     trim: true,
-    unique:true
   },
   noteId: {  
     type: String,

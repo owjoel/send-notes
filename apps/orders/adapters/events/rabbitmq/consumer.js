@@ -4,7 +4,12 @@ const {publishOrderProcessing} = require("./producer");
 let ch;
 const notesFoundQ = 'notes-found';
 const paymentCompletedQ = 'payment-completed';
-
+// Load environment variables
+// if (process.env.NODE_ENV === 'production') {
+//   dotenv.config({ path: '.env.production' });
+// } else {
+//   dotenv.config({ path: '.env.development' });
+// }
 async function configConsumer() {
   try {
     const conn = await amqp.connect({
@@ -12,7 +17,7 @@ async function configConsumer() {
       username: process.env.RABBITMQ_USER,
       password: process.env.RABBITMQ_PASSWORD,
       hostname: process.env.RABBITMQ_HOST,
-      port: 5671,
+      port: process.env.RABBITMQ_PORT,
     });
     console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`)
     ch = await conn.createChannel();
@@ -20,24 +25,32 @@ async function configConsumer() {
 
     await ch.assertQueue(notesFoundQ);
     ch.bindQueue(notesFoundQ, 'orders', 'orders.notes.#');
-    ch.consume(notesFoundQ, handleNotesFoundEvent);
+    await ch.consume(notesFoundQ, handleNotesEvent);
 
-    await ch.assertQueue(paymentCompletedQ);
-    ch.bindQueue(paymentCompletedQ, 'orders', 'orders.payment.#');
-    ch.consume(paymentCompletedQ, handlePaymentEvent);
+    // await ch.assertQueue(paymentCompletedQ);
+    // ch.bindQueue(paymentCompletedQ, 'orders', 'orders.payment.#');
+    // ch.consume(paymentCompletedQ, handlePaymentEvent);
 
   } catch (err) {
     console.log(err);
   }
 }
 
-const handleNotesFoundEvent = (message) => {
-  handleEvent(message, notesFoundHandler);
-}
+const handleNotesEvent = (message) => {
+  const routingKey = message.fields.routingKey;
+  if (routingKey === 'orders.notes.found') {
+    console.log('notes found event')
+    handleEvent(message, notesFoundHandler);
 
-const handlePaymentEvent = (message) => {
-  handleEvent(message, test);
+  } else if (routingKey === 'orders.notes.missing') {
+    console.log('notes missing event')
+    handleEvent(message, notesMissingHandler);
+
+  }
 }
+// const handlePaymentEvent = (message) => {
+//   handleEvent(message, test);
+// }
 
 function handleEvent(message, fn) {
   const data = JSON.parse(message.content.toString());
@@ -49,9 +62,13 @@ async function notesFoundHandler(data) {
   console.log(data);
   await OrderService.updateOrderStatus(data._id, 'validated')
 }
-
-async function paymentStatusHandler(data) {
+async function notesMissingHandler(data) {
   console.log(data);
+  await OrderService.updateOrderStatus(data._id, 'cancelled')
 }
+
+// async function paymentStatusHandler(data) {
+//   console.log(data);
+// }
 
 module.exports = { configConsumer };

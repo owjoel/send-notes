@@ -1,6 +1,7 @@
 package cs302.notes.producer;
 
 import cs302.notes.models.OrderCreated;
+import cs302.notes.models.OrderSuccess;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,9 @@ public class MessageSender {
     @Value("${rabbitmq.orders.notes-missing.rk}")
     private String notesMissingRk;
 
+    @Value("${rabbitmq.orders.email.rk}")
+    private String orderEmailRk;
+
 
 
     public void publishNotesMissing(OrderCreated message) {
@@ -32,5 +36,9 @@ public class MessageSender {
 
     public void publishNotesFound(OrderCreated message) {
         rabbitTemplate.convertAndSend(topicExchangeName, notesFoundRk, message);
+    }
+
+    public void publishEmailClients(OrderSuccess message) {
+        rabbitTemplate.convertAndSend(topicExchangeName, orderEmailRk, message);
     }
 }
