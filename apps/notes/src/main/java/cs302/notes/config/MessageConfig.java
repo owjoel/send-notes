@@ -16,42 +16,57 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MessageConfig {
     @Value("${rabbitmq.orders.exchange}")
-    private String topicExchangeName;
+    private String ordersExchangeName;
+
+    @Value("${rabbitmq.listings.exchange}")
+    private String listingsExchangeName;
 
     @Value("${rabbitmq.orders.created.queue}")
     private String createdQueueString;
 
     @Value("${rabbitmq.orders.success.queue}")
     private String successQueueString;
-    
-    @Value("${rabbitmq.orders.created.rk}")
-    private String orderCreatedRk;
 
-    @Value("${rabbitmq.orders.success.rk}")
-    private String orderSuccessRk;
+    @Value("${rabbitmq.listings.verified.queue}")
+    private String verifiedQueueString;
 
     @Bean
     Queue createQueue() {
-        return new Queue(createdQueueString, true);
+        return new Queue(createdQueueString);
     }
 
     @Bean
     Queue successQueue() {
-        return new Queue(successQueueString, true);
+        return new Queue(successQueueString);
     }
 
     @Bean
-    TopicExchange exchange() {
-        return new TopicExchange(topicExchangeName);
+    Queue verifiedQueue() {
+        return new Queue(verifiedQueueString);
     }
 
     @Bean
-    Binding binding1(Queue createQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(createQueue).to(exchange).with(orderCreatedRk);
+    TopicExchange ordersExchange() {
+        return new TopicExchange(ordersExchangeName);
+    }
+
+    @Bean
+    TopicExchange listingsExchange() {
+        return new TopicExchange(listingsExchangeName);
+    }
+
+    @Bean
+    Binding binding1(Queue createQueue, TopicExchange ordersExchange) {
+        return BindingBuilder.bind(createQueue).to(ordersExchange).with("orders.created");
     }
     @Bean
-    Binding binding2(Queue successQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(successQueue).to(exchange).with(orderSuccessRk);
+    Binding binding2(Queue successQueue, TopicExchange ordersExchange) {
+        return BindingBuilder.bind(successQueue).to(ordersExchange).with("orders.success");
+    }
+
+    @Bean
+    Binding binding3(Queue successQueue, TopicExchange listingsExchange) {
+        return BindingBuilder.bind(successQueue).to(listingsExchange).with("listings.verified");
     }
 
     @Bean

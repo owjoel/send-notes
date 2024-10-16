@@ -1,5 +1,6 @@
 package cs302.notes.consumer;
 
+import cs302.notes.models.ListingStatus;
 import cs302.notes.models.OrderCreated;
 import cs302.notes.exceptions.NotesNotFoundException;
 import cs302.notes.models.OrderSuccess;
@@ -37,4 +38,15 @@ public class MessageReceiver {
             System.out.println("Failed to send out notification");
         }
     }
+
+    @RabbitListener(queues = "${rabbitmq.orders.verified.queue}")
+    public void receiveMessage(final ListingStatus request) {
+        try {
+            System.out.println("Notes verified");
+        } catch (Exception e) {
+            System.out.println("Error receiving verification");
+        }
+    }
+
+
 }
