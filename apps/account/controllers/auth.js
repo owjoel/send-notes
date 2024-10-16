@@ -11,9 +11,6 @@ app.use(cookieParser());
 dotenv.config()
 
 const {exchangeCode, refreshTokens} = require("../services/auth.service");
-const {jwtDecode} = require("jwt-decode");
-const {CognitoJwtVerifier} = require("aws-jwt-verify");
-const MILISECONDS_IN_SECONDS = 1000;
 
 async function auth(req, res){
     try {
@@ -42,6 +39,12 @@ async function auth(req, res){
             sameSite: 'Strict'
         });
 
+        res.cookie('auth', "true", {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'Strict'
+        });
+
         const tokenIssuedAtInSeconds = Date.now();
         // const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
         const tokenMaxAge = tokenIssuedAtInSeconds + 10 * 1000
@@ -63,10 +66,11 @@ async function refreshToken(req, res){
     try {
         const refreshToken = req.cookies.refresh_token;
 
+        const response = await refreshTokens(refreshToken).then();
+        const tokens = await response.json();
 
-        const tokens = await refreshTokens(refreshToken);
 
-        if (tokens.ok) {
+        if (!response.ok) {
             res.clearCookie('id_token');
             res.clearCookie('access_token');
             res.clearCookie('refresh_token');
@@ -85,6 +89,7 @@ async function refreshToken(req, res){
             secure: true,
             sameSite: 'Strict'
         });
+        console.log("HELLO:", tokens["access_token"])
 
         const tokenIssuedAtInSeconds = Date.now();
         const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
@@ -137,8 +142,9 @@ async function logout(req, res){
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
         res.clearCookie('access_token_expire');
+        res.clearCookie('auth')
 
-        res.status(200).json()
+        res.status(200).json({"message": "logged out"})
     }catch (e){
         return res.status(404).json()
     }
@@ -147,7 +153,7 @@ async function logout(req, res){
 async function tokenValid(req,res){
 
     const accessToken = req.params.accessToken;
-// Verifier that expects valid access tokens:
+
     const verifier = CognitoJwtVerifier.create({
         userPoolId: process.env["cognito_userpool-id"],
         tokenUse: "access",
@@ -171,4 +177,4 @@ async function tokenValid(req,res){
 
 
 
-module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated, tokenValid}
+module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated}
