@@ -11,9 +11,6 @@ app.use(cookieParser());
 dotenv.config()
 
 const {exchangeCode, refreshTokens} = require("../services/auth.service");
-const {jwtDecode} = require("jwt-decode");
-const {CognitoJwtVerifier} = require("aws-jwt-verify");
-const MILISECONDS_IN_SECONDS = 1000;
 
 async function auth(req, res){
     try {
@@ -138,37 +135,37 @@ async function logout(req, res){
         res.clearCookie('refresh_token');
         res.clearCookie('access_token_expire');
 
-        res.status(200).json()
+        res.status(200).json({"message": "logged out"})
     }catch (e){
         return res.status(404).json()
     }
 }
 
-async function tokenValid(req,res){
-
-    const accessToken = req.params.accessToken;
-// Verifier that expects valid access tokens:
-    const verifier = CognitoJwtVerifier.create({
-        userPoolId: process.env["cognito_userpool-id"],
-        tokenUse: "access",
-        clientId: process.env["cognito_client-id"],
-    });
-
-    try {
-        const payload = await verifier.verify(
-            accessToken // the JWT as string
-        );
-        console.log("Token is valid. Payload:", payload);
-        return res.status(200).json({valid: true})
-    } catch {
-        console.log("Token not valid!");
-        return res.status(400).json({valid: false})
-
-    }
-}
-
-
+// async function tokenValid(req,res){
+//
+//     const accessToken = req.params.accessToken;
+//
+//     const verifier = CognitoJwtVerifier.create({
+//         userPoolId: process.env["cognito_userpool-id"],
+//         tokenUse: "access",
+//         clientId: process.env["cognito_client-id"],
+//     });
+//
+//     try {
+//         const payload = await verifier.verify(
+//             accessToken // the JWT as string
+//         );
+//         console.log("Token is valid. Payload:", payload);
+//         return res.status(200).json({valid: true})
+//     } catch {
+//         console.log("Token not valid!");
+//         return res.status(400).json({valid: false})
+//
+//     }
+// }
 
 
 
-module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated, tokenValid}
+
+
+module.exports = {callback: auth, refreshToken, authTest, logout, isAuthenticated}
