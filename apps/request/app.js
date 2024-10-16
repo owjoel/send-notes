@@ -5,6 +5,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var healthRouter = require('./routes/health')
 var requestItemRoute = require('./routes/requestItem')
+var notifyRoute = require('./routes/notify')
+
 const connectDB = require('./config/db');
 const bodyParser = require("body-parser");
 var app = express();
@@ -27,13 +29,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //body parse is for stripe webhook
 app.use('/api/v1/health', healthRouter);
-app.use('/api/v1/request', requestItemRoute);
+app.use('/api/v1/requests', requestItemRoute);
+app.use('/api/v1/notify', notifyRoute);
 
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+// // catch 404 and forward to error handler
+// app.use(function(req, res, next) {
+//   next(createError(404));
+// });
 
 // error handler
 app.use(function(err, req, res) {
