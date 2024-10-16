@@ -33,12 +33,19 @@ public class Notes {
     //price stores the notes' price in cents
     private Integer price;
 
-    public Notes(NotesRequest request) {
+    //verified stores whether set of notes have been verified
+    private String status;
+
+    /**
+     * Constructor for Notes from NotesRequest: Initialises all fields except _id and verified
+     */
+    public Notes(NotesRequest request, String status) {
         this.fkAccountOwner = request.getFkAccountOwner();
         this.title = request.getTitle();
         this.description = request.getDescription();
         this.url = request.getUrl();
         this.categoryCode = request.getCategoryCode();
         this.price = request.getPrice();
+        this.status = status;
     }
 }
