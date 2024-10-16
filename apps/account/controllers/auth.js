@@ -39,6 +39,12 @@ async function auth(req, res){
             sameSite: 'Strict'
         });
 
+        res.cookie('auth', "true", {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'Strict'
+        });
+
         const tokenIssuedAtInSeconds = Date.now();
         // const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
         const tokenMaxAge = tokenIssuedAtInSeconds + 10 * 1000
@@ -134,6 +140,7 @@ async function logout(req, res){
         res.clearCookie('access_token');
         res.clearCookie('refresh_token');
         res.clearCookie('access_token_expire');
+        res.clearCookie('auth')
 
         res.status(200).json({"message": "logged out"})
     }catch (e){
@@ -141,28 +148,28 @@ async function logout(req, res){
     }
 }
 
-// async function tokenValid(req,res){
-//
-//     const accessToken = req.params.accessToken;
-//
-//     const verifier = CognitoJwtVerifier.create({
-//         userPoolId: process.env["cognito_userpool-id"],
-//         tokenUse: "access",
-//         clientId: process.env["cognito_client-id"],
-//     });
-//
-//     try {
-//         const payload = await verifier.verify(
-//             accessToken // the JWT as string
-//         );
-//         console.log("Token is valid. Payload:", payload);
-//         return res.status(200).json({valid: true})
-//     } catch {
-//         console.log("Token not valid!");
-//         return res.status(400).json({valid: false})
-//
-//     }
-// }
+async function tokenValid(req,res){
+
+    const accessToken = req.params.accessToken;
+
+    const verifier = CognitoJwtVerifier.create({
+        userPoolId: process.env["cognito_userpool-id"],
+        tokenUse: "access",
+        clientId: process.env["cognito_client-id"],
+    });
+
+    try {
+        const payload = await verifier.verify(
+            accessToken // the JWT as string
+        );
+        console.log("Token is valid. Payload:", payload);
+        return res.status(200).json({valid: true})
+    } catch {
+        console.log("Token not valid!");
+        return res.status(400).json({valid: false})
+
+    }
+}
 
 
 
