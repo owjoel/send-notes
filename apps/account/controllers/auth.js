@@ -66,10 +66,11 @@ async function refreshToken(req, res){
     try {
         const refreshToken = req.cookies.refresh_token;
 
+        const response = await refreshTokens(refreshToken).then();
+        const tokens = await response.json();
 
-        const tokens = await refreshTokens(refreshToken);
 
-        if (tokens.ok) {
+        if (!response.ok) {
             res.clearCookie('id_token');
             res.clearCookie('access_token');
             res.clearCookie('refresh_token');
@@ -88,6 +89,7 @@ async function refreshToken(req, res){
             secure: true,
             sameSite: 'Strict'
         });
+        console.log("HELLO:", tokens["access_token"])
 
         const tokenIssuedAtInSeconds = Date.now();
         const tokenMaxAge = tokenIssuedAtInSeconds + tokens["expires_in"] * 1000
