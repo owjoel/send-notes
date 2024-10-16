@@ -11,7 +11,7 @@ async function getRequestItemById(req, res) {
 }
 
 async function createRequest(req, res) {
-  const userId = "test-user";
+  const userId = "test-user2";
   try {
     const requestItem = await RequestItemService.createRequest(userId, req.body);
     res.status(201).json({ message: 'Request created successfully', requestItem });
@@ -52,10 +52,21 @@ async function deleteRequestById(req, res) {
   }
 }
 
+async function notifyRequest(req, res) {
+  try {
+    const {tag} = req.params;
+    const notifyList = await RequestItemService.notifyRequest(tag);
+    res.status(200).json(notifyList);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 module.exports = {
   getRequestItemById,
   createRequest,
   getAllRequestItem,
   updateRequestById,
   deleteRequestById,
+  notifyRequest
 };
