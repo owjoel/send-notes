@@ -18,13 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class NotesController {
 
     private final NotesService notesService;
-    private final StorageService storageService;
 
     //Setter Injection
     @Autowired
-    public NotesController(NotesService notesService, StorageService storageService, MessageSender messageSender) {
+    public NotesController(NotesService notesService) {
         this.notesService = notesService;
-        this.storageService = storageService;
     }
 
     @GetMapping("")
@@ -42,8 +40,6 @@ public class NotesController {
 
     @PostMapping(value = "/notes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request) {
-        String s3Url = storageService.uploadFile(request.getFile(), request.getFkAccountOwner());
-        request.setUrl(s3Url);
         Response notesResponse = notesService.createNotes(request);
         return new ResponseEntity<>(notesResponse, HttpStatus.CREATED);
     }
