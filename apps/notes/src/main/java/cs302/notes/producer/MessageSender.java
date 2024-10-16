@@ -3,6 +3,7 @@ package cs302.notes.producer;
 import cs302.notes.models.ListingStatus;
 import cs302.notes.models.OrderCreated;
 import cs302.notes.models.OrderSuccess;
+import cs302.notes.models.OrdersNotesSuccess;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,8 @@ public class MessageSender {
         rabbitTemplate.convertAndSend(ordersExchange, "orders.notes.found", message);
     }
 
-    public void publishEmailClients(OrderSuccess message) {
+    // Take info from Orders service and append information about notes (everything except id)
+    public void publishEmailClients(OrdersNotesSuccess message) {
         rabbitTemplate.convertAndSend(ordersExchange, "orders.email", message);
     }
 
