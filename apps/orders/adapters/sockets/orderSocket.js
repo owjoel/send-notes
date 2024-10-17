@@ -10,8 +10,10 @@ const handleOrderRequest = (ws, orderId) => {
                 const orderData = await OrderService.findById(orderId);
                 console.log('orderData is', orderData);
 
-                if (orderData.status === 'validated') {
+                if (orderData.orderStatus === 'validated') {
+                    console.log('hello')
                     const client_secret = await OrderService.createPaymentIntent(orderId);
+                    console.log('client secret is ', client_secret);
                     ws.send(JSON.stringify(client_secret));
                     clearInterval(polling);
                     ws.close();

@@ -16,6 +16,8 @@ class OrderService {
 
             return {
                 status:200,
+                order
+                // client_secret: paymentIntent.client_secret,
             };
             
         } catch (error) {
@@ -24,15 +26,16 @@ class OrderService {
         }
     }
 
-    static async createPaymentIntent(orderData){
+    static async createPaymentIntent(orderId){
         try {
+            const orderData = await Order.findById(orderId);
             const paymentIntent = await stripe.paymentIntents.create({
                 amount : orderData.orderPrice,
                 currency: 'sgd',
                 customer:orderData.customerId,
                 payment_method_types: ['card'],
                 metadata: {
-                    orderId: orderData._id
+                    orderId: `${orderData._id}`
                 }
             });
             await Order.findOneAndUpdate(
@@ -40,7 +43,6 @@ class OrderService {
                 { $set: { orderStatus: `processing` } },
                 { new: true }
             );
-
             return paymentIntent.client_secret;
         } catch(error) {
             throw error;
@@ -76,7 +78,6 @@ class OrderService {
                 { $set: { orderStatus: `${status}` } },
                 { new: true }
             );
-            // console.log('updated order', updatedOrder);
             return {
                 status:200,
                 data: updatedOrder
@@ -86,12 +87,19 @@ class OrderService {
             throw new Error('Internal server error'); // Ensure this matches your test expectation
         }
     }
-
     static async deleteOrderById(orderId) {
         try {
             return await Order.deleteOne({ id: orderId });
 
         } catch (error) {
+            throw new Error('Internal server error');
+        }
+    }
+
+    static async getOrdersByAccId(accId) {
+        try {
+            return await Order.find({ buyerId: accId });
+        } catch {
             throw new Error('Internal server error');
         }
     }
