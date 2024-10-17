@@ -1,5 +1,6 @@
 const { notifyRequest } = require("../services/requestItemService");
 
+
 const notesFoundQ = "notes-found";
 const paymentCompletedQ = "payment-completed";
 
@@ -26,7 +27,7 @@ async function connnectAMQP() {
 
 // EDDY HELP THANKS HAHA
 const handleListingEvent = async (message) => {
-  const listing = JSON.parse(message.content.toString());
+  const listing = JSON.parse(message.content.toString()); // of type ListingStatus, see models
   const res = await notifyRequest(listing);
 };
 
