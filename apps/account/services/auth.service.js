@@ -5,7 +5,6 @@ const auth_url = process.env.cognito_subdomain + "." + process.env.cognito_domai
 
 async function exchangeCode(code) {
     // console.log(process.env["cognito_client-id"])
-    // console.log(process.env.cognito_callback_url)
     return await fetch(`https://${auth_url}/oauth2/token`, {
         method: 'POST',
         headers: {
@@ -47,17 +46,19 @@ async function exchangeCode(code) {
 // logout_uri=https%3A%2F%2Fwww.example.com%2Fwelcome
 
 async function refreshTokens(refreshToken) {
-    const response = await fetch(`https://${auth_url}/oauth2/token`, {
+    const result =  await fetch(`https://${auth_url}/oauth2/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
             grant_type: 'refresh_token',
             client_id: process.env["cognito_client-id"],
+            client_secret: process.env["cognito_client-secret"],
             refresh_token: refreshToken,
         }),
     });
+    console.log(result.status)
+    return result;
 
-    return await response;
 }
 
 
