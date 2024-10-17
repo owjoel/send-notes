@@ -233,7 +233,7 @@ class ListingStatus():
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "listing_id": self.listing_id,
+            "listing_id": self._id,
             "status": self.status,
             "price": self.price,
             "categoryCode": self.categoryCode,
@@ -242,13 +242,17 @@ class ListingStatus():
 
 def on_message(ch: Channel, method, properties, body: bytes) -> None:
     data = json.loads(body)
+    print('data', data)
     listing: ListingStatus = ListingStatus(**data)
+    print('listing', listing)
 
     parsed_url = urlparse(listing.url)
     bucket = parsed_url.netloc.split('.')[0]
     key = parsed_url.path.lstrip('/')
+    print(bucket, key)
 
-    local_path = f"/tmp/{key}"
+    local_path = f"{os.getcwd()}/tmp/{key}"
+    print(local_path)
     s3.Bucket(bucket).download_file(key, local_path)
     file = upload_file_to_openai(local_path)
     delete_file_from_local(local_path)
@@ -260,8 +264,9 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
         listing.status = "Verified"
     else:
         listing.status = "Rejected"
-    queue.put(listing.to)
-    ch.basic_ack(delivery_tag=method.deliery_tag)
+    print('listingBefore:', listing)
+    queue.put(listing)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
@@ -284,9 +289,10 @@ def producer() -> None:
             listing: ListingStatus = queue.get(block=True)
             if listing is None:
                 break
-            ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=listing.to_json())
+            print(f"Listing type: {type(listing)}, content: {listing.to_json()}")
+            ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
         except Exception as e:
-            print(e)
+            print("Caught:", e.__traceback__)
 
 
 if __name__ == "__main__":
