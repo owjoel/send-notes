@@ -56,7 +56,9 @@ public class NotesController {
 
     @PostMapping(value = "/notes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request) {
-        // Add in code here to convert token to accountId and input into request
+        // Hardcoded for now till actual account ID can be obtained from JWT
+        String account_num = "123456";
+        request.setFkAccountOwner(account_num);
         Response notesResponse = notesService.createNotes(request);
         return new ResponseEntity<>(notesResponse, HttpStatus.CREATED);
     }
