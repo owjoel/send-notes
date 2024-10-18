@@ -13,6 +13,7 @@ function configSocket(server) {
       if (segments[0] === "orders" && segments[1] !== undefined) {
         wss.handleUpgrade(req, socket, head, (ws) => {
           console.log('New Order WebSocket connection');
+          console.log('orderID:', segments[1]);
           const orderId = segments[1]; // Extract order ID from the URL
           handleOrderRequest(ws, orderId); // Call the order handling function
         });

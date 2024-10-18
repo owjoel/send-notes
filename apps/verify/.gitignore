@@ -1,7 +1,8 @@
 # Configuration files
-.env
+*.env
 .idea
 venv
+env
 
 # Uploads folder
 uploads

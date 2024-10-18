@@ -1,7 +1,9 @@
 package cs302.notes.producer;
 
+import cs302.notes.models.ListingStatus;
 import cs302.notes.models.OrderCreated;
 import cs302.notes.models.OrderSuccess;
+import cs302.notes.models.OrdersNotesSuccess;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,31 +16,34 @@ public class MessageSender {
     private RabbitTemplate rabbitTemplate;
 
     @Value("${rabbitmq.orders.exchange}")
-    private String topicExchangeName;
+    private String ordersExchange;
 
-    @Value("rabbitmq.orders.created.rk")
-    private String orderCreatedRk;
-
-    @Value("${rabbitmq.orders.notes-found.rk}")
-    private String notesFoundRk;
-
-    @Value("${rabbitmq.orders.notes-missing.rk}")
-    private String notesMissingRk;
-
-    @Value("${rabbitmq.orders.email.rk}")
-    private String orderEmailRk;
+    @Value("${rabbitmq.listings.exchange}")
+    private String listingsExchange;
 
 
-
+    // ORDERS
     public void publishNotesMissing(OrderCreated message) {
-        rabbitTemplate.convertAndSend(topicExchangeName, notesMissingRk, message);
+        rabbitTemplate.convertAndSend(ordersExchange, "orders.notes.missing", message);
     }
 
     public void publishNotesFound(OrderCreated message) {
-        rabbitTemplate.convertAndSend(topicExchangeName, notesFoundRk, message);
+        rabbitTemplate.convertAndSend(ordersExchange, "orders.notes.found", message);
     }
 
-    public void publishEmailClients(OrderSuccess message) {
-        rabbitTemplate.convertAndSend(topicExchangeName, orderEmailRk, message);
+    // Take info from Orders service and append information about notes (everything except id)
+    public void publishEmailClients(OrdersNotesSuccess message) {
+        rabbitTemplate.convertAndSend(ordersExchange, "orders.email", message);
+    }
+
+
+
+    // LISTINGS
+    public void publishListingUploaded(ListingStatus message) {
+        rabbitTemplate.convertAndSend(listingsExchange, "listings.uploaded", message);
+    }
+
+    public void publishListingCompleted(ListingStatus message) {
+        rabbitTemplate.convertAndSend(listingsExchange, "listings.completed", message);
     }
 }

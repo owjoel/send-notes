@@ -14,4 +14,5 @@ public class ListingStatus {
     private String status;
     private Integer price;
     private String categoryCode;
+    private String url;
 }

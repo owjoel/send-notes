@@ -3,9 +3,7 @@ package cs302.notes.controller;
 import cs302.notes.data.request.NotesRequest;
 import cs302.notes.data.response.DefaultResponse;
 import cs302.notes.data.response.Response;
-import cs302.notes.producer.MessageSender;
 import cs302.notes.service.services.NotesService;
-import cs302.notes.service.services.StorageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,18 +11,18 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 public class NotesController {
 
     private final NotesService notesService;
-    private final StorageService storageService;
 
     //Setter Injection
     @Autowired
-    public NotesController(NotesService notesService, StorageService storageService, MessageSender messageSender) {
+    public NotesController(NotesService notesService) {
         this.notesService = notesService;
-        this.storageService = storageService;
     }
 
     @GetMapping("")
@@ -32,18 +30,33 @@ public class NotesController {
         return new ResponseEntity<>(DefaultResponse.builder().message("Hello World!").build(), HttpStatus.OK);
     }
 
+    @GetMapping("/notes/categories")
+    public ResponseEntity<Response> getAllDistinctCategories() {
+        Response response = notesService.getAllDistinctCategories();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/notes/account")
+    public ResponseEntity<Response> getAllNotesByAccount(@RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "10") int limit) {
+        // Hardcoded for now till actual account ID can be obtained from JWT
+        String account_num = "123456";
+        Response response = notesService.getAllNotesByAccountId(account_num, page, limit);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/notes")
-    public ResponseEntity<Response> getNotes(@RequestParam(defaultValue = "") String account_num,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "10") int limit) {
-        Response response = notesService.getNotes(account_num, page, limit);
+    public ResponseEntity<Response> getAllVerifiedNotes(@RequestParam(defaultValue = "") String categoryCode,
+                                                        @RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "10") int limit) {
+        Response response = "".equals(categoryCode) ? notesService.getAllNotesByStatusIn(List.of("Verified"), page, limit)
+                : notesService.getAllNotesByCategoryCodeAndStatusIn(categoryCode, List.of("Verified"), page, limit);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping(value = "/notes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request) {
-        String s3Url = storageService.uploadFile(request.getFile(), request.getFkAccountOwner());
-        request.setUrl(s3Url);
+        // Add in code here to convert token to accountId and input into request
         Response notesResponse = notesService.createNotes(request);
         return new ResponseEntity<>(notesResponse, HttpStatus.CREATED);
     }

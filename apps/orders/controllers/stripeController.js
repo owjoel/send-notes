@@ -8,14 +8,17 @@ async function stripeWebhook  (req, res){
 
         if (event.type === 'payment_intent.created') {
             const paymentIntent = event.data.object;
-            console.log('PaymentIntent created:');
+            console.log('PaymentIntent created:', event.data.object);
+
 
         } else if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
             console.log('PaymentIntent succeeded:', paymentIntent);
-            await OrderService.updateOrderStatus(paymentIntent.metadata._id, 'successful');
-            order = await OrderService.findById(paymentIntent.metadata._id)
-            publishOrderSuccessful(paymentIntent.metadata._id, order)
+            await OrderService.updateOrderStatus(paymentIntent.metadata.orderId, 'successful');
+            console.log('ORDER ID' , paymentIntent.metadata.orderId)
+
+            order = await OrderService.findById(paymentIntent.metadata.orderId);
+            publishOrderSuccessful(paymentIntent.metadata.orderId, order)
 
         } else if (event.type === 'payment_intent.payment_failed') {
             const paymentIntent = event.data.object;
