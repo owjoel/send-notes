@@ -1,5 +1,5 @@
 const RequestItemService = require('../services/requestItemService');
-
+const {getEmail} = require("../../../middlewares/token_verifier/index")
 async function getRequestItemById(req, res) {
   try {
     const { requestId } = req.params;
@@ -12,8 +12,9 @@ async function getRequestItemById(req, res) {
 
 async function createRequest(req, res) {
   const userId = "test-user2";
+  const email = getEmail(req);
   try {
-    const requestItem = await RequestItemService.createRequest(userId, req.body);
+    const requestItem = await RequestItemService.createRequest(userId, req.body, email);
     res.status(201).json({ message: 'Request created successfully', requestItem });
   } catch (error) {
     res.status(500).json({ message: error.message });
