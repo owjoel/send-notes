@@ -2,6 +2,16 @@ import json
 import os
 import time
 import logging
+from typing import Any, Dict
+import pika
+import threading
+import json
+import queue
+import boto3
+
+from urllib.parse import urlparse
+from dataclasses import dataclass
+from pika.channel import Channel
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, Request
 from openai import APIConnectionError, InternalServerError, OpenAI, NotFoundError
@@ -201,5 +211,93 @@ def upload_file():
     delete_file_from_vector_store(file=file)
     return jsonify({"message": json_response['verified']}), 200
 
+# AMQP Pub/Sub
+protocol = os.getenv("RABBITMQ_PROTOCOL")
+host = os.getenv('RABBITMQ_HOST')
+username = os.getenv('RABBITMQ_USERNAME')
+password = os.getenv('RABBITMQ_PASSWORD')
+url = f"{protocol}://{username}:{password}@{host}"
+exchange = os.getenv("RABBITMQ_EXCHANGE")
+amqp_queue = os.getenv("RABBITMQ_QUEUE")
+
+queue = queue.Queue()
+s3 = boto3.resource('s3')
+
+@dataclass
+class ListingStatus():
+    _id: str
+    status: str
+    price: int
+    categoryCode: str
+    url: str
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "listing_id": self._id,
+            "status": self.status,
+            "price": self.price,
+            "categoryCode": self.categoryCode,
+            "url": self.url
+        }
+
+def on_message(ch: Channel, method, properties, body: bytes) -> None:
+    data = json.loads(body)
+    print('data', data)
+    listing: ListingStatus = ListingStatus(**data)
+    print('listing', listing)
+
+    parsed_url = urlparse(listing.url)
+    bucket = parsed_url.netloc.split('.')[0]
+    key = parsed_url.path.lstrip('/')
+    print(bucket, key)
+
+    local_path = f"{os.getcwd()}/tmp/{key}"
+    print(local_path)
+    s3.Bucket(bucket).download_file(key, local_path)
+    file = upload_file_to_openai(local_path)
+    delete_file_from_local(local_path)
+    json_response = run_assistant(file=file)
+    delete_file_from_vector_store(file=file)
+    verified = json_response['verified']
+
+    if verified:
+        listing.status = "Verified"
+    else:
+        listing.status = "Rejected"
+    print('listingBefore:', listing)
+    queue.put(listing)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+def consumer() -> None:
+    conn = pika.BlockingConnection(pika.URLParameters(url))
+    print(conn)
+    ch = conn.channel()
+
+    ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
+    ch.queue_declare(queue=amqp_queue)
+    ch.queue_bind(exchange=exchange, queue=amqp_queue, routing_key="listings.uploaded")
+    ch.basic_consume(queue=amqp_queue, on_message_callback=on_message)
+    ch.start_consuming()
+
+def producer() -> None:
+    conn = pika.BlockingConnection(pika.URLParameters(url))
+    print(conn)
+    ch = conn.channel()
+    ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
+    while True:
+        try:
+            listing: ListingStatus = queue.get(block=True)
+            if listing is None:
+                break
+            print(f"Listing type: {type(listing)}, content: {listing.to_json()}")
+            ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
+        except Exception as e:
+            print("Caught:", e.__traceback__)
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    consumer = threading.Thread(target=consumer, daemon=True)
+    producer = threading.Thread(target=producer, daemon=True)
+    consumer.start();
+    producer.start();
+    app.run()

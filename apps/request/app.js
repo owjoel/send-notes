@@ -9,11 +9,13 @@ var notifyRoute = require('./routes/notify')
 
 const connectDB = require('./config/db');
 const bodyParser = require("body-parser");
+const { connnectAMQP } = require('./events/consumer');
 var app = express();
 
 // view engine setup
 
 connectDB();
+connnectAMQP();
 
 app.use(
     bodyParser.json({
