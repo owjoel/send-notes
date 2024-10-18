@@ -13,11 +13,9 @@ class OrderService {
             const order = await new Order(data);
             await order.save();
             publishOrderCreated(order._id, order)
-
             return {
                 status:200,
-                order
-                // client_secret: paymentIntent.client_secret,
+                orderId: order.id
             };
             
         } catch (error) {
@@ -40,7 +38,10 @@ class OrderService {
             });
             await Order.findOneAndUpdate(
                 { _id: orderData._id },
-                { $set: { orderStatus: `processing` } },
+                { $set: {
+                    orderStatus: `processing`,
+                    paymentIntentId: paymentIntent.id
+                } },
                 { new: true }
             );
             return paymentIntent.client_secret;
