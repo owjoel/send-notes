@@ -11,7 +11,6 @@ const handleOrderRequest = (ws, orderId) => {
                 console.log('orderData is', orderData);
 
                 if (orderData.orderStatus === 'validated') {
-                    console.log('hello')
                     const client_secret = await OrderService.createPaymentIntent(orderId);
                     console.log('client secret is ', client_secret);
                     ws.send(JSON.stringify(client_secret));

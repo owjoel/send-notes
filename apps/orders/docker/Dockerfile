@@ -7,7 +7,7 @@ ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION}-alpine AS base
 
 # Set working directory for all build stages.
-WORKDIR /usr/src/app/orders .
+WORKDIR /app
 
 ################################################################################
 FROM base AS production
@@ -31,9 +31,7 @@ COPY ./package-lock.json .
 RUN npm ci
 
 COPY . .
-
-# Use development node environment by default.
-ENV NODE_ENV=development
+COPY --chown=app:app . /app
 
 # Expose port for development server
 EXPOSE 3000
