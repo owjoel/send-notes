@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class NotesServiceImpl implements NotesService {
     @Override
     public Response getAllNotesByAccountId(String account_num, int pageNum, int limit) {
         Pageable paging = PageRequest.of(pageNum, limit);
-        Page page = notesRepository.findByFkAccountOwner(account_num, paging);
+        Page page = notesRepository.findByFkAccountOwnerOrderByStatus(account_num, paging);
         return MultiNotesResponse.builder()
                 .totalItems(page.getTotalElements())
                 .response(page.getContent())

@@ -27,10 +27,6 @@ async function configConsumer() {
     ch.bindQueue(notesFoundQ, 'orders', 'orders.notes.#');
     await ch.consume(notesFoundQ, handleNotesEvent);
 
-    // await ch.assertQueue(paymentCompletedQ);
-    // ch.bindQueue(paymentCompletedQ, 'orders', 'orders.payment.#');
-    // ch.consume(paymentCompletedQ, handlePaymentEvent);
-
   } catch (err) {
     console.log(err);
   }
@@ -48,9 +44,6 @@ const handleNotesEvent = (message) => {
 
   }
 }
-// const handlePaymentEvent = (message) => {
-//   handleEvent(message, test);
-// }
 
 function handleEvent(message, fn) {
   const data = JSON.parse(message.content.toString());

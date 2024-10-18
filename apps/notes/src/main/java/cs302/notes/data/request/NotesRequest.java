@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class NotesRequest {
 
     @JsonProperty("fkAccountOwner")
-    @NotEmpty @Size(min=1)
     //fkAccountOwner stores the AWS cognito user id
     private String fkAccountOwner;
 

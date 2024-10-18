@@ -1,12 +1,6 @@
 const amqp = require("amqplib");
 
 let ch;
-// Load environment variables
-// if (process.env.NODE_ENV === 'production') {
-//   dotenv.config({ path: '.env.production' });
-// } else {
-//   dotenv.config({ path: '.env.development' });
-// }
 async function configProducer() {
   try {
     const conn = await amqp.connect({
