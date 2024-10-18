@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 @Builder
-public class MultiStringResponse {
+public class MultiStringResponse implements Response {
     public List<String> response;
 }

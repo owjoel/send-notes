@@ -2,6 +2,7 @@ package cs302.notes.service.serviceImpl;
 
 import cs302.notes.data.request.NotesRequest;
 import cs302.notes.data.response.MultiNotesResponse;
+import cs302.notes.data.response.MultiStringResponse;
 import cs302.notes.data.response.Response;
 import cs302.notes.data.response.SingleNotesResponse;
 import cs302.notes.exceptions.NotesNotFoundException;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class NotesServiceImpl implements NotesService {
@@ -42,15 +45,45 @@ public class NotesServiceImpl implements NotesService {
     }
 
     @Override
-    public Response getNotes(String account_num, int pageNum, int limit) {
+    public Response getAllNotesByAccountId(String account_num, int pageNum, int limit) {
         Pageable paging = PageRequest.of(pageNum, limit);
-        Page page = "".equals(account_num) ? notesRepository.findAll(paging) : notesRepository.findByFkAccountOwner(account_num, paging);
+        Page page = notesRepository.findByFkAccountOwner(account_num, paging);
         return MultiNotesResponse.builder()
                 .totalItems(page.getTotalElements())
                 .response(page.getContent())
                 .totalPages(page.getTotalPages())
                 .currentPage(page.getNumber())
                 .build();
+    }
+
+    @Override
+    public Response getAllNotesByStatusIn(List<String> status, int pageNum, int limit) {
+        Pageable paging = PageRequest.of(pageNum, limit);
+        Page page = notesRepository.findByStatusIn(status, paging);
+        return MultiNotesResponse.builder()
+                .totalItems(page.getTotalElements())
+                .response(page.getContent())
+                .totalPages(page.getTotalPages())
+                .currentPage(page.getNumber())
+                .build();
+    }
+
+    @Override
+    public Response getAllNotesByCategoryCodeAndStatusIn(String categoryCode, List<String> status, int pageNum, int limit) {
+        Pageable paging = PageRequest.of(pageNum, limit);
+        Page page = notesRepository.findByStatusInAndCategoryCode(status, categoryCode, paging);
+        return MultiNotesResponse.builder()
+                .totalItems(page.getTotalElements())
+                .response(page.getContent())
+                .totalPages(page.getTotalPages())
+                .currentPage(page.getNumber())
+                .build();
+    }
+
+    @Override
+    public Response getAllDistinctCategories() {
+        List<String> categories = notesRepository.findDistinctCategoryCode();
+        return MultiStringResponse.builder().response(categories).build();
     }
 
     @Override

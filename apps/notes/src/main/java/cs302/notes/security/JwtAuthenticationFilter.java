@@ -28,18 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String token = WebUtils.getCookie(request, "access_token").getValue();
-        logger.info("TOKEN:"+token);
-        if (token != null && validateToken(token)) {
-            logger.info("CLAIMS A");
+        String id_token = WebUtils.getCookie(request, "id_token").getValue();
+        if (token != null && validateToken(token) && validateToken(id_token)) {
             Claims claims = getClaimsFromToken(token);
-            logger.info("CLAIMS B");
             if (claims != null) {
                 // Set authentication in the context
-                logger.info("CLAIMS C");
                 JwtAuthenticationToken authentication = new JwtAuthenticationToken(claims);
-                logger.info("CLAIMS D");
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                logger.info("CLAIMS E");
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
