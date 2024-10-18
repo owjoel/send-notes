@@ -40,4 +40,10 @@ public class JwkUtil {
         return new String(Base64.getUrlDecoder().decode(encodedString));
     }
 
+    public static String getValueFromTokenPayload(String token, String key) {
+        String[] parts = token.split("\\.");
+        JSONObject payload = new JSONObject(decode(parts[1]));
+        return payload.getString(key);
+    }
+
 }
