@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv')
 const {CognitoJwtVerifier} = require("aws-jwt-verify");
+const {jwtDecode} = require('jwt-decode');
 
 const app = express();
 
@@ -37,4 +38,25 @@ async function tokenValid(req,res, next){
     }
 }
 
-module.exports = {tokenValid}
+function getValueFromJwt(jwt, key){
+    const decodedToken = jwtDecode(jwt);
+    const value = decodedToken[key];
+    return value
+}
+
+function getUsername(req){
+    const idToken = req.cookies.id_token;
+    return getValueFromJwt(idToken,"cognito:username")
+}
+
+function getEmail(req){
+    const idToken = req.cookies.id_token;
+    return getValueFromJwt(idToken,"email")
+}
+
+function getId(req){
+    const idToken = req.cookies.id_token;
+    return getValueFromJwt(idToken,"sub")
+}
+
+module.exports = {tokenValid, getUsername, getEmail, getId}
