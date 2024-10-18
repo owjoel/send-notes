@@ -65,8 +65,8 @@ public class MessageConfig {
     }
 
     @Bean
-    Binding binding3(Queue successQueue, TopicExchange listingsExchange) {
-        return BindingBuilder.bind(successQueue).to(listingsExchange).with("listings.verified");
+    Binding binding3(Queue verifiedQueue, TopicExchange listingsExchange) {
+        return BindingBuilder.bind(verifiedQueue).to(listingsExchange).with("listings.verified");
     }
 
     @Bean

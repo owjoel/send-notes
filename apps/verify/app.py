@@ -227,9 +227,9 @@ s3 = boto3.resource('s3')
 class ListingStatus():
     _id: str
     status: str
-    price: int
-    categoryCode: str
     url: str
+    price: int = None
+    categoryCode: str = None
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -270,7 +270,7 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
 
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    print(conn)
+    print(f"Consumer Connected: {host}")
     ch = conn.channel()
 
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
@@ -281,7 +281,7 @@ def consumer() -> None:
 
 def producer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    print(conn)
+    print(f"Producer Connected: {host}")
     ch = conn.channel()
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
     while True:
@@ -290,8 +290,11 @@ def producer() -> None:
             if listing is None:
                 break
             print(f"Listing type: {type(listing)}, content: {listing.to_json()}")
+            print(exchange)
             ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
+
         except Exception as e:
+            print(e)
             print("Caught:", e.__traceback__)
 
 
