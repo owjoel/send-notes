@@ -6,9 +6,6 @@ services:
       target: production
     environment:
       NODE_ENV: production
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     depends_on:
       rabbitmq:
           condition: service_healthy
