@@ -10,9 +10,11 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+          condition: service_healthy
     ports:
       - 3000:3000
+
   rabbitmq:
     image: rabbitmq:management
     ports:
@@ -21,3 +23,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmqctl status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
