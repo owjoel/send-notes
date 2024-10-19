@@ -18,6 +18,7 @@ services:
             - node_modules/
         - action: rebuild
           path: package.json
+
   rabbitmq:
     image: rabbitmq:management
     ports:
