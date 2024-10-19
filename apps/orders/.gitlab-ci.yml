@@ -2,10 +2,11 @@ stages:
   - test
 
 variables:
-  DS_DISABLED_ANALYZERS: "gemnasium-maven,gemnasium-python"
+  DS_EXCLUDED_ANALYZERS: "gemnasium-maven,gemnasium-python"
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci/yml
 
 
 # Jest tests
