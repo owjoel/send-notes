@@ -60,7 +60,7 @@ orders-build:
 container_scanning:
   stage: scan
   variables:
-    CS_IMAGE="${ECR_RESGISTRY}:${VERSION}"
+    CS_IMAGE: "${ECR_RESGISTRY}:${VERSION}"
   dependencies:
     - orders-build
 
