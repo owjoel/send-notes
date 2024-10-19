@@ -16,8 +16,7 @@ async function getOrderById(req, res) {
 
 // Create new order
 async function createOrder(req, res) {
-  // const { orderId, stripeTransactionId, noteId, buyerEmail, orderStatus, orderPrice } = req.body;
-  // console.log(req.body);
+
   try {
     const order = await OrderService.createOrder(req.body);
     res.status(201).json({ message: 'Order created successfully', ...order });
