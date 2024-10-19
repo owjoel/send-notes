@@ -1,5 +1,15 @@
 stages:
-  - trigger
+- test
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
+
+
+
+
+# stages:
+#   - trigger
 
 
 # trigger_account:
@@ -14,13 +24,13 @@ stages:
 #     - changes:
 #         - ./apps/notes/**
 
-trigger_orders:
-  stage: trigger
-  trigger:
-    include: apps/services/orders/.gitlab-ci.yml
-  rules:
-    - changes:
-        - apps/services/orders/**
+# trigger_orders:
+#   stage: trigger
+#   trigger:
+#     include: apps/services/orders/.gitlab-ci.yml
+#   rules:
+#     - changes:
+#         - apps/services/orders/**
 
 # trigger_request:
 #   stage: trigger
