@@ -59,7 +59,7 @@ orders-build:
 container_scanning:
   stage: scan
   variables:
-    CS_IMAGE: "${ECR_RESGISTRY}:${VERSION}"
+    CS_IMAGE: "${ECR_REGISTRY}:${VERSION}"
     CS_DOCKERFILE_PATH: "./apps/orders/docker/Dockerfile"
   dependencies:
     - orders-build
