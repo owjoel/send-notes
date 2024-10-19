@@ -49,8 +49,8 @@ orders-build:
   artifacts:
     reports:
       dotenv: build.env
-  only:
-    - tags
+  # only:
+  #   - tags
 
 container_scanning:
   stage: scan
