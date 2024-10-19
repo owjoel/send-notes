@@ -1,5 +1,5 @@
 stages:
-  - unit-test
+  - test
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
