@@ -2,11 +2,15 @@ const RequestItem = require("../models/RequestItem");
 const {
   publishRequestNotify,
 } = require("../adapters/events/rabbitmq/producer");
+const AWS = require('aws-sdk');
 
-// Create new order
+const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
+const notifyQueueUrl = process.env["NOTIFY_SQS"];
+
+AWS.config.update({ region: process.env["AWS_REGION"] });
 
 class RequestItemService {
-  static async createRequest(user, requestData) {
+  static async createRequest(user, requestData, email) {
     const regex = /^[a-zA-Z0-9 _-]+$/;
 
     // Only allow these characters ( alpha numbers _ - space )
@@ -17,6 +21,7 @@ class RequestItemService {
     try {
       const request = new RequestItem();
       request.userId = user;
+      request.email = email;
       request.tag = requestData.tag;
 
       await request.save();
@@ -74,7 +79,11 @@ class RequestItemService {
     }
   }
 
-  static async notifyRequest(tag) {
+
+  static async notifyRequest(tag, noteId) {
+
+    noteId = "test-note-id";
+
     await RequestItem.exists({ tag: tag }).catch((err) => {
       throw new Error("Tag not found");
     });
@@ -82,21 +91,54 @@ class RequestItemService {
     try {
       const requestItems = await RequestItem.find({ tag: tag });
 
-      let users = [];
 
       for (let i = 0; i < requestItems.length; i++) {
-        users.push(requestItems[i].userId);
+        await RequestItemService.notifyToQueue(requestItems[i].email, tag, noteId)
       }
 
-      const result = { users, tag };
 
-      publishRequestNotify(result);
 
-      return result;
+      return;
     } catch (error) {
       throw new Error("internal server error");
     }
   }
+
+  static async notifyToQueue(email, tag, noteId){
+
+    const messageBody = {
+      sellerEmail: email,
+      tag: tag,
+      note_id: noteId
+    };
+
+    const params = {
+      MessageBody: JSON.stringify(messageBody),
+      QueueUrl: notifyQueueUrl,
+    };
+
+    console.log(params)
+
+
+
+    try {
+      const data = await sqs.sendMessage(params).promise();
+      console.log('Message sent successfully:', data.MessageId);
+      return true;
+    } catch (err) {
+      console.error('Error sending message to SQS:', err);
+      return false;
+    }
+  }
+
+
 }
 
 module.exports = RequestItemService;
+
+
+
+
+
+
+
