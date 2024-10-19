@@ -11,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 @RestController
@@ -18,6 +21,8 @@ import java.util.List;
 public class NotesController {
 
     private final NotesService notesService;
+    private static final Logger logger = LoggerFactory.getLogger(NotesController.class);
+
 
     //Setter Injection
     @Autowired

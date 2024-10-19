@@ -27,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
         String token = WebUtils.getCookie(request, "access_token").getValue();
         String id_token = WebUtils.getCookie(request, "id_token").getValue();
         if (token != null && validateToken(token) && validateToken(id_token)) {
@@ -36,6 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 JwtAuthenticationToken authentication = new JwtAuthenticationToken(claims);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                httpRequest.setAttribute("id", JwkUtil.getValueFromTokenPayload(id_token, "sub"));
+                httpRequest.setAttribute("username", JwkUtil.getValueFromTokenPayload(id_token, "cognito:username"));
+                httpRequest.setAttribute("email", JwkUtil.getValueFromTokenPayload(id_token, "email"));
             }
         }
 
