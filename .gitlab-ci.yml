@@ -9,8 +9,21 @@
 
 
 stages:
+  - test
   - trigger
 
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
+
+trigger_orders:
+  stage: trigger
+  trigger:
+    include: apps/orders/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/orders/**
 
 # trigger_account:
 #   stage: trigger
@@ -23,15 +36,6 @@ stages:
 #   rules:
 #     - changes:
 #         - ./apps/notes/**
-
-trigger_orders:
-  stage: trigger
-  trigger:
-    include: apps/orders/.gitlab-ci.yml
-  rules:
-    - changes:
-        - apps/orders/**
-
 # trigger_request:
 #   stage: trigger
 #   rules:
