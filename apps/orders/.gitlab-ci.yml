@@ -1,7 +1,7 @@
 stages:
   - Test
 
-jest-tests:
+order-unit-tests:
   stage: Test
   image: node:20-slim
   before_script:
@@ -13,3 +13,5 @@ jest-tests:
     when: always
     paths:
       - coverage/
+  variables:
+    STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
