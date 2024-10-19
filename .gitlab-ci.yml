@@ -1,54 +1,50 @@
 stages:
-- test
-- trigger
+  - trigger
+
+include:
+  - local: './apps/account/.gitlab-ci.yml'
+  - local: './apps/notes/.gitlab-ci.yml'
+  - local: './apps/orders/.gitlab-ci.yml'
+  - local: './apps/request/.gitlab-ci.yml'
+  - local: './apps/reviews/.gitlab-ci.yml'
+  - local: './apps/verify/.gitlab-ci.yml'
 
 trigger_account:
   stage: trigger
-  trigger:
-    include: ./apps/account/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/account/**
 
 trigger_notes:
   stage: trigger
-  trigger:
-    include: ./apps/notes/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/notes/**
 
 trigger_orders:
   stage: trigger
-  trigger:
-    include: ./apps/orders/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/orders/**
 
 trigger_request:
   stage: trigger
-  trigger:
-    include: ./apps/request/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/request/**
 
 trigger_reviews:
   stage: trigger
-  trigger:
-    include: ./apps/reviews/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/reviews/**
 
 trigger_verify:
   stage: trigger
-  trigger:
-    include: ./apps/verify/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/verify/**
+
 # sast:
 #   stage: test
 # include:
