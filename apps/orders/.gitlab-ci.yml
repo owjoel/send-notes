@@ -5,6 +5,7 @@ jest-tests:
   stage: Test
   image: node:20-slim
   before_script:
+    - cd ./apps/orders
     - npm install
   script:
     - npm test:coverage
