@@ -1,0 +1,14 @@
+stages:
+  - Test
+
+jest-tests:
+  stage: Test
+  image: node:20-slim
+  before_script:
+    - npm install
+  script:
+    - npm test:coverage
+  artifacts:
+    when: always
+    paths:
+      - coverage/
