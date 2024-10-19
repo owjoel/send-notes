@@ -8,7 +8,7 @@ jest-tests:
     - cd ./apps/orders
     - npm install
   script:
-    - npm run test:coverage
+    - npm run test
   artifacts:
     when: always
     paths:
