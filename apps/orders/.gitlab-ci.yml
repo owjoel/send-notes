@@ -1,8 +1,13 @@
 stages:
-  - Test
+  - unit-test
 
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+
+
+# Jest tests
 order-unit-tests:
-  stage: Test
+  stage: test
   image: node:20-slim
   before_script:
     - cd ./apps/orders
