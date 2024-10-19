@@ -42,7 +42,7 @@ orders-build:
     - apk add --no-cache git
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd ./apps/orders
-    - git tag --list
+    - git fetch --tags
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
     - git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*"
     - echo LATEST_TAG
