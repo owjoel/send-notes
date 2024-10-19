@@ -32,8 +32,6 @@ orders-unit-tests:
   variables:
     STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
 
-orders-unit
-
 # Build Docker Image
 orders-build:
   image: docker:20.10.16
