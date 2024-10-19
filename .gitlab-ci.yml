@@ -1,13 +1,57 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/pipeline/#customization
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - test
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
+- trigger
+
+trigger_account:
+  stage: trigger
+  trigger:
+    include: ./apps/account/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/account/**
+
+trigger_notes:
+  stage: trigger
+  trigger:
+    include: ./apps/notes/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/notes/**
+
+trigger_orders:
+  stage: trigger
+  trigger:
+    include: ./apps/orders/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/orders/**
+
+trigger_request:
+  stage: trigger
+  trigger:
+    include: ./apps/request/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/request/**
+
+trigger_reviews:
+  stage: trigger
+  trigger:
+    include: ./apps/reviews/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/reviews/**
+
+trigger_verify:
+  stage: trigger
+  trigger:
+    include: ./apps/verify/.gitlab-ci.yml
+  rules:
+    - changes:
+        - ./apps/verify/**
+# sast:
+#   stage: test
+# include:
+# - template: Security/SAST.gitlab-ci.yml
+
+
