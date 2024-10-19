@@ -1,34 +1,43 @@
 services:
   mongo:
     image: mongo
-    restart: always
     container_name: mongodb_ordertest_container
     ports:
       - "27017:27017"  
     environment:
       MONGO_INITDB_ROOT_USERNAME: testuser
       MONGO_INITDB_ROOT_PASSWORD: testpassword
+      TEST_MONGODB_URI: ${TEST_MONGODB_URI}
     volumes:
       - mongo_data:/data/db
     healthcheck:
       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      interval: 10s  
+      timeout: 10s    
+      retries: 3    
+      start_period: 50s  
 
   orders:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
-      target: production
-    environment:
-      NODE_ENV: production
+      context: ../
+      dockerfile: ci/Dockerfile.test
     depends_on:
       rabbitmq:
-          condition: service_healthy
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     ports:
       - 3000:3000
-
+    develop:
+      watch:
+        - action: sync
+          path: ..
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+          
   rabbitmq:
     image: rabbitmq:management
     ports:
@@ -42,7 +51,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      
+
 volumes:
   mongo_data:
   

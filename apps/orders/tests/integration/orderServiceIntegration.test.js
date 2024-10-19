@@ -3,15 +3,20 @@ const mongoose = require('mongoose');
 const app = require('../../app'); 
 const Order = require('../../models/Order'); 
 const ordersFixture = require('../fixtures/ordersFixture');
+const connectDB = require('../../config/db');
+
+
+jest.setTimeout(100000);
 
 describe('Order API Integration Tests', () => {
-  
-  beforeAll(async () => {
-    await mongoose.connect('mongodb://testuser:testpassword@localhost:27017/orderstest_db', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
 
+  beforeAll(async () => {
+    process.env.NODE_ENV = 'test';
+    console.log(`Connecting to MongoDB URI: ${process.env.TEST_MONGODB_URI}`);
+    // await new Promise(resolve => setTimeout(resolve, 70000));
+    await connectDB();
+    console.log('Connected to MongoDB');
+    
     await Order.deleteMany({});
     await Order.insertMany(ordersFixture);
     orderIdToDelete = ordersFixture[0]._id;
@@ -31,7 +36,7 @@ describe('Order API Integration Tests', () => {
 
   it('should fetch a specific order by ID', async () => {
     const orderId = ordersFixture[0]._id;
-    const response = await request(app).get('/orders/${orderId}'); 
+    const response = await request(app).get(`/orders/${orderId}`); 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('_id', orderId);
     expect(response.body).toHaveProperty('orderPrice', ordersFixture[0].orderPrice);
@@ -70,7 +75,7 @@ describe('Order API Integration Tests', () => {
     };
     const orderId = ordersFixture[0]._id;
 
-    const response = await request(app).put('/orders/${orderId}').send(updatedData); 
+    const response = await request(app).put(`/orders/${orderId}`).send(updatedData); 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('orderStatus', 'completed');
 
@@ -88,10 +93,11 @@ describe('Order API Integration Tests', () => {
   });
 
   it('should delete an order by ID', async () => {
-    const response = await request(app).delete('/orders/${orderIdToDelete}'); 
+    const response = await request(app).delete(`/orders/${orderIdToDelete}`); 
     
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('deletedCount', 1);
+
     const deletedOrder = await Order.findById(orderIdToDelete);
     expect(deletedOrder).toBeNull();
   });

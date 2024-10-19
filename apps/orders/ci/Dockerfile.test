@@ -12,7 +12,7 @@ RUN npm install
 # Copy the rest of the application code to the working directory
 COPY . .
 
-# Expose the port (if required during testing, optional for tests).
+# Expose the port 
 EXPOSE 3000
 
 # Set environment variables for testing.
