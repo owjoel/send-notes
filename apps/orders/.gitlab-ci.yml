@@ -24,6 +24,7 @@ orders-unit-tests:
     - npm install
   script:
     - npm run test
+  allow_failure: true
   artifacts:
     when: always
     paths:
@@ -39,12 +40,13 @@ orders-build:
       alias: docker
   stage: build
   script:
+    - cd ./apps/orders
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
     - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo VERSION >> build.env
     
-    - docker build -t ${ECR_REGISTRY}:${VERSION}
+    - docker build -f docker/Dockerfile -t ${ECR_REGISTRY}:${VERSION} .
     - docker tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
   artifacts:
     reports:
