@@ -60,13 +60,15 @@ orders-build:
 
 container_scanning:
   stage: scan
-  script:
-    - export CS_IMAGE="${ECR_RESGISTRY}:${VERSION}"
-    - container-scanning
+  variables:
+    - CS_IMAGE="${ECR_RESGISTRY}:${VERSION}"
   dependencies:
     - orders-build
 
 orders-push:
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
   stage: push
   script:
     - docker push ${ECR_REGISTRY}:${VERSION}
