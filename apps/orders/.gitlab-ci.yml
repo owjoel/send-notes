@@ -34,12 +34,12 @@ orders-unit-tests:
 
 # Build Docker Image
 orders-build:
-  image: $CI_REGISTRY/group/project/docker:20.10.16
+  image: docker:20.10.16
   services:
-    - name: $CI_REGISTRY/group/project/docker:20.10.16-dind
-      alias: docker
+    - docker:20.10.16-dind
   stage: build
   script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd ./apps/orders
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
     - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
