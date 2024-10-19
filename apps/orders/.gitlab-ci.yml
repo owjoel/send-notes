@@ -2,7 +2,7 @@ stages:
   - test
 
 variables:
-  DS_DISABLED_ANALYZERS: "maven,python"
+  DS_DISABLED_ANALYZERS: "gemnasium-maven,gemnasium-python"
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
