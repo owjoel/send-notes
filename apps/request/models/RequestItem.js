@@ -7,6 +7,12 @@ const requestItemSchema = new mongoose.Schema({
     trim: true,
     unique:false
   },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    unique:false
+  },
   tag: {
     type: String,
     required: true,
