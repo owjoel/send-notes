@@ -40,10 +40,12 @@ orders-build:
   stage: build
   script:
     - apk add --no-cache git
-    - git --no-pager log -n 5 --oneline 
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd ./apps/orders
+    - git tag --list
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
+    - git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*"
+    - echo LATEST_TAG
     - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo VERSION >> build.env
