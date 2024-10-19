@@ -31,7 +31,7 @@ COPY ./package-lock.json .
 RUN npm ci
 
 COPY . .
-COPY --chown=app:app . /app
+#COPY --chown=app:app . /app
 
 # Expose port for development server
 EXPOSE 3000

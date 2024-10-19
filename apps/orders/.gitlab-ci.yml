@@ -1,0 +1,26 @@
+stages:
+  - test
+
+variables:
+  DS_EXCLUDED_ANALYZERS: "gemnasium-maven,gemnasium-python"
+
+include:
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+
+
+# Jest tests
+order-unit-tests:
+  stage: test
+  image: node:20-slim
+  before_script:
+    - cd ./apps/orders
+    - npm install
+  script:
+    - npm run test
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+  variables:
+    STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
