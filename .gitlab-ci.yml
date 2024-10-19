@@ -29,29 +29,30 @@ trigger_orders:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/account/**
+#         - ./apps/account/**/*
 
 # trigger_notes:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/notes/**
+#         - ./apps/notes/**/*
+
 # trigger_request:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/request/**
+#         - ./apps/request/**/*
 
 # trigger_reviews:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/reviews/**
+#         - ./apps/reviews/**/*
 
 # trigger_verify:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/verify/**
+#         - ./apps/verify/**/*
 
 
