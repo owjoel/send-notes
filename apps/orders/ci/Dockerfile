@@ -15,8 +15,5 @@ COPY . .
 # Expose the port 
 EXPOSE 3000
 
-# Set environment variables for testing.
-ENV NODE_ENV=test
-
 # Run the integration tests
 CMD ["npm", "run", "test:integration"]

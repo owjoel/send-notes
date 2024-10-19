@@ -7,12 +7,9 @@ const connectDB = async () => {
   if (isConnected) return; // Avoid multiple connections
 
   try {
-    const dbUri =
-      process.env.NODE_ENV === 'test'
-        ? process.env.TEST_MONGODB_URI // Use test DB for integration tests
-        : process.env.MONGODB_URI; // Use Atlas for production or development
-
-    const conn = await mongoose.connect(dbUri);
+    const dbUri = process.env.MONGODB_URI
+    console.log(`Connecting to MongoDB URI: ${dbUri}`);
+      const conn = await mongoose.connect(dbUri);
 
     isConnected = mongoose.connection.readyState === 1
 

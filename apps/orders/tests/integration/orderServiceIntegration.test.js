@@ -11,8 +11,8 @@ jest.setTimeout(100000);
 describe('Order API Integration Tests', () => {
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    console.log(`Connecting to MongoDB URI: ${process.env.TEST_MONGODB_URI}`);
+    // process.env.NODE_ENV = 'test';
+    console.log(`Connecting to MongoDB URI: ${process.env.MONGODB_URI}`);
     // await new Promise(resolve => setTimeout(resolve, 70000));
     await connectDB();
     console.log('Connected to MongoDB');
