@@ -1,54 +1,45 @@
 stages:
-- test
-- trigger
+  - trigger
 
-trigger_account:
-  stage: trigger
-  trigger:
-    include: ./apps/account/.gitlab-ci.yml
-  rules:
-    - changes:
-        - ./apps/account/**
 
-trigger_notes:
-  stage: trigger
-  trigger:
-    include: ./apps/notes/.gitlab-ci.yml
-  rules:
-    - changes:
-        - ./apps/notes/**
+# trigger_account:
+#   stage: trigger
+#   rules:
+#     - changes:
+#         - ./apps/account/**
+
+# trigger_notes:
+#   stage: trigger
+#   rules:
+#     - changes:
+#         - ./apps/notes/**
 
 trigger_orders:
   stage: trigger
   trigger:
-    include: ./apps/orders/.gitlab-ci.yml
+    include: apps/services/orders/.gitlab-ci.yml
   rules:
     - changes:
-        - ./apps/orders/**
+        - apps/services/orders/**
 
-trigger_request:
-  stage: trigger
-  trigger:
-    include: ./apps/request/.gitlab-ci.yml
-  rules:
-    - changes:
-        - ./apps/request/**
+# trigger_request:
+#   stage: trigger
+#   rules:
+#     - changes:
+#         - ./apps/request/**
 
-trigger_reviews:
-  stage: trigger
-  trigger:
-    include: ./apps/reviews/.gitlab-ci.yml
-  rules:
-    - changes:
-        - ./apps/reviews/**
+# trigger_reviews:
+#   stage: trigger
+#   rules:
+#     - changes:
+#         - ./apps/reviews/**
 
-trigger_verify:
-  stage: trigger
-  trigger:
-    include: ./apps/verify/.gitlab-ci.yml
-  rules:
-    - changes:
-        - ./apps/verify/**
+# trigger_verify:
+#   stage: trigger
+#   rules:
+#     - changes:
+#         - ./apps/verify/**
+
 # sast:
 #   stage: test
 # include:
