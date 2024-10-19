@@ -23,7 +23,7 @@ orders-unit-tests:
     - cd ./apps/orders
     - npm install
   script:
-    - npm run test
+    - npm run test:unit
   allow_failure: true
   artifacts:
     when: always

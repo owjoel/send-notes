@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon index.js",
-    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
     "test:coverage": "jest --coverage",
     "test:integration": "jest --testPathPattern=integration",
     "docker-compose": " docker-compose --env-file .env -f ./docker/compose.yaml up --build",
