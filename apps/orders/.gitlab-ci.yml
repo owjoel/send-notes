@@ -44,7 +44,6 @@ orders-build:
     - cd ./apps/orders
     - git fetch --tags
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
-    - git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*"
     - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo VERSION >> build.env
@@ -61,6 +60,7 @@ container_scanning:
   stage: scan
   variables:
     CS_IMAGE: "${ECR_RESGISTRY}:${VERSION}"
+    CS_DOCKERFILE_PATH: "./apps/orders/docker/Dockerfile"
   dependencies:
     - orders-build
 
@@ -72,3 +72,5 @@ orders-push:
   script:
     - docker push ${ECR_REGISTRY}:${VERSION}
     - docker push ${ECR_REGISTRY}:latest
+  dependencies:
+    - orders-build
