@@ -32,6 +32,8 @@ orders-unit-tests:
   variables:
     STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
 
+orders-unit
+
 # Build Docker Image
 orders-build:
   image: docker:20.10.16
@@ -39,6 +41,7 @@ orders-build:
     - docker:20.10.16-dind
   stage: build
   script:
+    - apk add --no-cache git
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - cd ./apps/orders
     - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
