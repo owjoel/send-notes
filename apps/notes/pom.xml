@@ -11,6 +11,9 @@
 	<groupId>cs302</groupId>
 	<artifactId>notes</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+
+	<packaging>jar</packaging>
+
 	<name>notes</name>
 	<description>Notes Service for CS302</description>
 	<url/>
