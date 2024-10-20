@@ -155,7 +155,7 @@ def create_run(thread_id: str):
 def run_assistant(file):
     if file is None: raise ValueError(fileNotUploadedError)
     # Create messages
-    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions and less than 50 tokens.'''}]
+    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions, less than 50 tokens and ensure that response is in the JSON format is kept.'''}]
     # Create thread to run
     thread = client.beta.threads.create(messages=messages)
     # Create run
@@ -233,7 +233,7 @@ class ListingStatus():
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "listing_id": self._id,
+            "_id": self._id,
             "status": self.status,
             "price": self.price,
             "categoryCode": self.categoryCode,
@@ -242,9 +242,8 @@ class ListingStatus():
 
 def on_message(ch: Channel, method, properties, body: bytes) -> None:
     data = json.loads(body)
-    print('data', data)
     listing: ListingStatus = ListingStatus(**data)
-    print('listing', listing)
+    print('Listing:', listing)
 
     parsed_url = urlparse(listing.url)
     bucket = parsed_url.netloc.split('.')[0]
@@ -253,20 +252,23 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
 
     local_path = f"{os.getcwd()}/tmp/{key}"
     print(local_path)
-    s3.Bucket(bucket).download_file(key, local_path)
-    file = upload_file_to_openai(local_path)
-    delete_file_from_local(local_path)
-    json_response = run_assistant(file=file)
-    delete_file_from_vector_store(file=file)
-    verified = json_response['verified']
+    try:
+        s3.Bucket(bucket).download_file(key, local_path)
+        file = upload_file_to_openai(local_path)
+        delete_file_from_local(local_path)
+        json_response = run_assistant(file=file)
+        delete_file_from_vector_store(file=file)
+        verified = json_response['verified']
 
-    if verified:
-        listing.status = "Verified"
-    else:
-        listing.status = "Rejected"
-    print('listingBefore:', listing)
-    queue.put(listing)
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+        if verified:
+            listing.status = "Verified"
+        else:
+            listing.status = "Rejected"
+        queue.put(listing)
+    except Exception as e:
+        print(e)
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
@@ -290,7 +292,6 @@ def producer() -> None:
             if listing is None:
                 break
             print(f"Listing type: {type(listing)}, content: {listing.to_json()}")
-            print(exchange)
             ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
 
         except Exception as e:
