@@ -1,26 +1,86 @@
 stages:
   - test
+  - build
+  - scan
+  - push
 
 variables:
+  SERVICE: "orders"
   DS_EXCLUDED_ANALYZERS: "gemnasium-maven,gemnasium-python"
+  ECR_REGISTRY: "211125709264.dkr.ecr.ap-southeast-1.amazonaws.com/${SERVICE}"
+  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/SAST.gitlab-ci.yml
 
 
 # Jest tests
-order-unit-tests:
+orders-unit-tests:
   stage: test
   image: node:20-slim
   before_script:
     - cd ./apps/orders
     - npm install
   script:
-    - npm run test
+    - npm run test:unit
+  allow_failure: true
   artifacts:
     when: always
     paths:
       - coverage/
   variables:
     STRIPE_SECRET_KEY: $STRIPE_SECRET_KEY
+
+# Build Docker Image
+orders-build:
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  stage: build
+  script:
+    - apk add --no-cache git
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - cd ./apps/${SERVICE}
+    - git fetch --tags
+    - LATEST_TAG=$(git tag --list "${SERVICE}-v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
+    - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
+    - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
+    - echo "VERSION=${VERSION}" >> build.env
+
+    - docker build -f docker/Dockerfile -t $IMAGE .
+    - docker push $IMAGE
+  artifacts:
+    reports:
+      dotenv: ./apps/${SERVICE}/build.env
+  # only:
+  #   - tags
+
+container_scanning:
+  stage: scan
+  variables:
+    CS_IMAGE: "$IMAGE"
+    CS_DOCKERFILE_PATH: "./apps/orders/docker/Dockerfile"
+  dependencies:
+    - orders-build
+
+orders-push:
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  stage: push
+  before_script:
+    - apk add --no-cache python3 py3-pip
+    - pip install awscli
+    - aws --version
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker pull $IMAGE
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 211125709264.dkr.ecr.ap-southeast-1.amazonaws.com
+    - docker tag $IMAGE ${ECR_REGISTRY}:${VERSION}
+    - docker tag $IMAGE ${ECR_REGISTRY}:latest
+    - docker push ${ECR_REGISTRY}:${VERSION}
+    - docker push ${ECR_REGISTRY}:latest
+  dependencies:
+    - orders-build

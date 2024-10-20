@@ -1,0 +1,44 @@
+services:
+  orders:
+    build:
+      context: ..
+      dockerfile: ci/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+#      mongo:
+#        condition: service_healthy
+    ports:
+      - 3000:3000
+    environment:
+      MONGODB_URI: mongodb://root:example@host.docker.internal:27017/test_db?authSource=admin
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+#    healthcheck:
+#      test: ["CMD", "mongo", "--username", "root", "--password", "example", "--eval", "db.runCommand({ ping: 1 })"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmqctl status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+
+  
