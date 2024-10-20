@@ -1,7 +1,4 @@
 const RequestItem = require("../models/RequestItem");
-const {
-  publishRequestNotify,
-} = require("../adapters/events/rabbitmq/producer");
 const AWS = require('aws-sdk');
 
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
@@ -81,8 +78,7 @@ class RequestItemService {
 
 
   static async notifyRequest(tag, noteId) {
-
-    noteId = "test-note-id";
+    console.log("NOTIFY: ", tag, noteId)
 
     await RequestItem.exists({ tag: tag }).catch((err) => {
       throw new Error("Tag not found");
@@ -91,12 +87,9 @@ class RequestItemService {
     try {
       const requestItems = await RequestItem.find({ tag: tag });
 
-
       for (let i = 0; i < requestItems.length; i++) {
         await RequestItemService.notifyToQueue(requestItems[i].email, tag, noteId)
       }
-
-
 
       return;
     } catch (error) {
@@ -117,8 +110,7 @@ class RequestItemService {
       QueueUrl: notifyQueueUrl,
     };
 
-    console.log(params)
-
+    console.log("PARAMETER: ", params);
 
 
     try {

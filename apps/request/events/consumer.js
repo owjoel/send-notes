@@ -1,8 +1,8 @@
 const { notifyRequest } = require("../services/requestItemService");
+const amqp = require("amqplib");
 
-
-const notesFoundQ = "notes-found";
-const paymentCompletedQ = "payment-completed";
+let ch;
+const orderSuccessQ = 'requests-notify';
 
 async function connnectAMQP() {
   try {
@@ -14,21 +14,35 @@ async function connnectAMQP() {
       port: process.env.RABBITMQ_PORT,
     });
     console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`);
-    ch = await conn.createChannel();
-    ch.assertExchange("orders", "topic");
 
-    await ch.assertQueue(notesFoundQ);
-    ch.bindQueue(notesFoundQ, "orders", "orders.notes.#");
-    await ch.consume(notesFoundQ, handleListingEvent);
+    ch = await conn.createChannel();
+    ch.assertExchange("listings", "topic");
+
+
+    await ch.assertQueue(orderSuccessQ);
+    ch.bindQueue(orderSuccessQ, 'listings', 'listings.completed');
+    ch.consume(orderSuccessQ, handleListingCompleted)
+
+
+
   } catch (err) {
     console.log(err);
   }
 }
 
-// EDDY HELP THANKS HAHA
-const handleListingEvent = async (message) => {
-  const listing = JSON.parse(message.content.toString()); // of type ListingStatus, see models
-  const res = await notifyRequest(listing);
-};
+const handleListingCompleted = async (message) => {
+  console.log("HANDLING LISTING")
+  ch.ack(message);
+  try {
+    const data = JSON.parse(message.content.toString());
+    console.log(data);
+    const seller = await notifyRequest(data.categoryCode,data._id);
+
+    console.log(seller)
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 
 module.exports = { connnectAMQP };

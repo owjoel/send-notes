@@ -1,39 +1,49 @@
+const { notifyRequest } = require("../../../services/requestItemService");
 const amqp = require("amqplib");
-const requestItemService = require("../../../services/requestItemService")
+
+const notesFoundQ = "notes-found";
+const paymentCompletedQ = "payment-completed";
+
 let ch;
-const notesVerifiedQ = 'notes-verified';
+const orderSuccessQ = 'requests-notify';
 
-async function configConsumer() {
-  try {
-    const conn = await amqp.connect();
-    ch = await conn.createChannel();
-    ch.assertExchange('requests', 'topic');
+async function configMQ() {
+  const conn = await amqp.connect({
+    protocol: process.env.RABBITMQ_PROTOCOL,
+    username: process.env.RABBITMQ_USERNAME,
+    password: process.env.RABBITMQ_PASSWORD,
+    hostname: process.env.RABBITMQ_HOST,
+    port: process.env.RABBITMQ_PORT,
+  });
+  console.log(`CONSUMER Connected: ${process.env.RABBITMQ_HOST}`);
 
-    await ch.assertQueue(notesVerifiedQ);
-    ch.bindQueue(notesVerifiedQ, 'requests', 'notes.verified');
-    ch.consume(notesVerifiedQ, handleNotesVerified);
+  ch = await conn.createChannel();
+  ch.assertExchange("listings", "topic");
+
+
+  await ch.assertQueue(orderSuccessQ);
+  ch.bindQueue(orderSuccessQ, 'listings', 'listings.completed');
+  ch.consume(orderSuccessQ, handleListingCompleted)
 
   } catch (err) {
     console.log(err);
   }
 }
 
-const handleNotesVerified = (message) => {
-  handleEvent(message, notesVerifiedHandler);
-}
-
-
-function handleEvent(message, fn) {
-  const data = JSON.parse(message.content.toString());
-  fn(data);
+const handleListingCompleted = async (message) => {
+  console.log("HANDLING LISTING")
   ch.ack(message);
+  try {
+    const data = JSON.parse(message.content.toString());
+    console.log(data);
+    const seller = await notifyRequest(data.categoryCode,data._id);
+
+    if (!ok) {
+      console.log('Error publishing message!');
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-async function notesVerifiedHandler(data) {
-  console.log(data);
-  const tag = data.tag
-  await requestItemService.notifyRequest(tag)
-}
-
-
-module.exports = { configConsumer };
+module.exports = configMQ;
