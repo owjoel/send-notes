@@ -17,6 +17,8 @@ trigger_orders:
 
 trigger_notes:
   stage: trigger
+  trigger:
+    include: apps/notes/.gitlab-ci.yml
   rules:
     - changes:
         - ./apps/notes/**/*
