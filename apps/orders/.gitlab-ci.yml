@@ -74,6 +74,8 @@ orders-push:
     - docker:20.10.16-dind
   stage: push
   script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker pull $IMAGE
     - docker tag $IMAGE ${ECR_REGISTRY}:${VERSION}
     - docker tag $IMAGE ${ECR_REGISTRY}:latest
     - docker push ${ECR_REGISTRY}:${VERSION}
