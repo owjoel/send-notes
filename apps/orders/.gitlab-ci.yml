@@ -49,7 +49,7 @@ orders-build:
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo "VERSION=${VERSION}" >> build.env
 
-    - docker build -f docker/Dockerfile -t $IMAGE
+    - docker build -f docker/Dockerfile -t $IMAGE .
     - docker push $IMAGE
 
     # - docker build -f docker/Dockerfile -t ${ECR_REGISTRY}:${VERSION} .
