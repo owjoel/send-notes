@@ -76,14 +76,14 @@ public class NotesController {
     public ResponseEntity<Response> replaceNotesById(@PathVariable("notesId") String notesId,
                                                      @Valid @RequestBody NotesRequest request,
                                                      @RequestAttribute("id") String id) {
-        Response response = notesService.replaceNotes(notesId, request);
+        Response response = notesService.replaceNotes(id, notesId, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/notes/{notesId}")
     public ResponseEntity<Response> deleteNotesById(@PathVariable("notesId") String notesId,
                                                     @RequestAttribute("id") String id) {
-        Response response = notesService.deleteNotes(notesId);
+        Response response = notesService.deleteNotes(id, notesId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

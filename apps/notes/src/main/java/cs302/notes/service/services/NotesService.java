@@ -14,6 +14,6 @@ public interface NotesService {
     Response getAllNotesByCategoryCodeAndStatusIn(String categoryCode, List<String> status, int pageNum, int limit);
     Response getAllDistinctCategories();
     Response createNotes(NotesRequest request);
-    Response replaceNotes(String id, NotesRequest request);
-    Response deleteNotes(String id);
+    Response replaceNotes(String fkAccountOwner, String id, NotesRequest request);
+    Response deleteNotes(String fkAccountOwner, String id);
 }
