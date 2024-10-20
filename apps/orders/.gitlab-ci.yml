@@ -8,6 +8,7 @@ variables:
   SERVICE: "orders"
   DS_EXCLUDED_ANALYZERS: "gemnasium-maven,gemnasium-python"
   ECR_REGISTRY: "211125709264.dkr.ecr.ap-southeast-1.amazonaws.com/${SERVICE}"
+  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
@@ -47,9 +48,12 @@ orders-build:
     - SEMVER=$(echo "$LATEST_TAG" | sed "s/${SERVICE}-//")
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo "VERSION=${VERSION}" >> build.env
-    
-    - docker build -f docker/Dockerfile -t ${ECR_REGISTRY}:${VERSION} .
-    - docker tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
+
+    - docker build -f docker/Dockerfile -t $IMAGE
+    - docker push $IMAGE
+
+    # - docker build -f docker/Dockerfile -t ${ECR_REGISTRY}:${VERSION} .
+    # - docker tag ${ECR_REGISTRY}:${VERSION} ${ECR_REGISTRY}:latest
   artifacts:
     reports:
       dotenv: ./apps/${SERVICE}/build.env
@@ -59,7 +63,7 @@ orders-build:
 container_scanning:
   stage: scan
   variables:
-    CS_IMAGE: "${ECR_REGISTRY}:${VERSION}"
+    CS_IMAGE: "$IMAGE"
     CS_DOCKERFILE_PATH: "./apps/orders/docker/Dockerfile"
   dependencies:
     - orders-build
@@ -70,6 +74,8 @@ orders-push:
     - docker:20.10.16-dind
   stage: push
   script:
+    - docker tag $IMAGE ${ECR_REGISTRY}:${VERSION}
+    - docker tag $IMAGE ${ECR_REGISTRY}:latest
     - docker push ${ECR_REGISTRY}:${VERSION}
     - docker push ${ECR_REGISTRY}:latest
   dependencies:
