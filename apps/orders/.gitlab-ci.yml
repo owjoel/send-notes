@@ -77,7 +77,7 @@ orders-push:
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - docker pull $IMAGE
-    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 211125709264.dkr.ecr.ap-southeast-1.amazonaws.com
     - docker tag $IMAGE ${ECR_REGISTRY}:${VERSION}
     - docker tag $IMAGE ${ECR_REGISTRY}:latest
     - docker push ${ECR_REGISTRY}:${VERSION}
