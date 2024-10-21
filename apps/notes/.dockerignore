@@ -1,21 +1,21 @@
 # Ignore Maven build output
 target/
 
-# Ignore local environment config files (often used for configuration in Spring Boot)
+# Ignore local environment config files
 .env
 *.env
-.env.*  # In case you have multiple environment-specific .env files
+.env.*  
 
-# Ignore log files
+# log files
 *.log
 logs/
 
-# Ignore temporary files
+# temporary
 *.tmp
 *.swp
 *.bak
 
-# Ignore IDE-specific files (like IntelliJ IDEA, Eclipse, VS Code)
+# IDE-specific files
 .idea/
 *.iml
 .vscode/
@@ -23,19 +23,22 @@ logs/
 .classpath
 .settings/
 
-# Maven wrapper files - generally not needed in Docker (optional)
+# Maven wrapper files
 .mvn/
 mvnw
 mvnw.cmd
 
-# Ignore OS-specific files (for macOS and Windows)
+# OS
 .DS_Store
 Thumbs.db
 
-# Ignore Git repository files
+# Git
 .git
 .gitignore
 
-# Ignore Docker-specific files (if not required inside the image)
+# Docker-specific files
 Dockerfile
 .dockerignore
+
+# App secrets
+**/secrets.properties
