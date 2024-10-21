@@ -5,6 +5,7 @@ import cs302.notes.data.response.MultiNotesResponse;
 import cs302.notes.data.response.MultiStringResponse;
 import cs302.notes.data.response.Response;
 import cs302.notes.data.response.SingleNotesResponse;
+import cs302.notes.exceptions.ForbiddenException;
 import cs302.notes.exceptions.NotesNotFoundException;
 import cs302.notes.models.ListingStatus;
 import cs302.notes.models.Notes;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -108,8 +108,9 @@ public class NotesServiceImpl implements NotesService {
     }
 
     @Override
-    public Response replaceNotes(String id, NotesRequest request) {
+    public Response replaceNotes(String fkAccountOwner, String id, NotesRequest request) {
         Notes foundNotes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
+        if (foundNotes.getFkAccountOwner().equals(fkAccountOwner)) { throw new ForbiddenException(); }
         Notes notes = new Notes(request, foundNotes.getStatus());
         notes.set_id(id);
         notesRepository.save(notes);
@@ -117,8 +118,9 @@ public class NotesServiceImpl implements NotesService {
     }
 
     @Override
-    public Response deleteNotes(String id) {
+    public Response deleteNotes(String fkAccountOwner, String id) {
         Notes notes = notesRepository.findBy_id(id).orElseThrow(() -> new NotesNotFoundException(id));
+        if (notes.getFkAccountOwner().equals(fkAccountOwner)) { throw new ForbiddenException(); }
         notesRepository.delete(notes);
         return SingleNotesResponse.builder().response(notes).build();
     }

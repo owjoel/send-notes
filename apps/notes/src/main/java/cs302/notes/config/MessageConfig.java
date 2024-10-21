@@ -55,15 +55,25 @@ public class MessageConfig {
         return new TopicExchange(listingsExchangeName);
     }
 
+    /**
+     * Creates a binding of queue "order-created" to exchange "orders" with routing key "orders.created"
+     */
     @Bean
     Binding binding1(Queue createQueue, TopicExchange ordersExchange) {
         return BindingBuilder.bind(createQueue).to(ordersExchange).with("orders.created");
     }
+
+    /**
+     * Creates a binding of queue "order-success" to exchange "orders" with routing key "orders.success"
+     */
     @Bean
     Binding binding2(Queue successQueue, TopicExchange ordersExchange) {
         return BindingBuilder.bind(successQueue).to(ordersExchange).with("orders.success");
     }
 
+    /**
+     * Creates a binding of queue "order-success" to exchange "orders" with routing key "orders.success"
+     */
     @Bean
     Binding binding3(Queue verifiedQueue, TopicExchange listingsExchange) {
         return BindingBuilder.bind(verifiedQueue).to(listingsExchange).with("listings.verified");

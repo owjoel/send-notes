@@ -1,21 +1,5 @@
-# stages:
-# - test
-# sast:
-#   stage: test
-# include:
-# - template: Security/SAST.gitlab-ci.yml
-
-
-
-
 stages:
-  # - test
   - trigger
-
-# sast:
-#   stage: test
-# include:
-# - template: Security/SAST.gitlab-ci.yml
 
 trigger_orders:
   stage: trigger
@@ -25,34 +9,40 @@ trigger_orders:
     - changes:
         - apps/orders/**/*
 
-# trigger_account:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - ./apps/account/**/*
+trigger_account:
+  stage: trigger
+  trigger:
+    include: apps/account/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/account/**/*
 
-# trigger_notes:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - ./apps/notes/**/*
+trigger_notes:
+  stage: trigger
+  trigger:
+    include: apps/notes/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/notes/**/*
 
-# trigger_request:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - ./apps/request/**/*
+trigger_request:
+  stage: trigger
+  trigger:
+    include: apps/request/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/request/**/*
 
 # trigger_reviews:
 #   stage: trigger
 #   rules:
 #     - changes:
-#         - ./apps/reviews/**/*
+#         - apps/reviews/**/*
 
-# trigger_verify:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - ./apps/verify/**/*
-
-
+trigger_verify:
+  stage: trigger
+  trigger:
+    include: apps/verify/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/verify/**/*

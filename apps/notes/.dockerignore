@@ -1,0 +1,44 @@
+# Ignore Maven build output
+target/
+
+# Ignore local environment config files
+.env
+*.env
+.env.*  
+
+# log files
+*.log
+logs/
+
+# temporary
+*.tmp
+*.swp
+*.bak
+
+# IDE-specific files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Maven wrapper files
+.mvn/
+mvnw
+mvnw.cmd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker-specific files
+Dockerfile
+.dockerignore
+
+# App secrets
+**/secrets.properties

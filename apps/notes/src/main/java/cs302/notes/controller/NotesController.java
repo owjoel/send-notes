@@ -43,10 +43,9 @@ public class NotesController {
 
     @GetMapping("/notes/account")
     public ResponseEntity<Response> getAllNotesByAccount(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "10") int limit) {
-        // Hardcoded for now till actual account ID can be obtained from JWT
-        String account_num = "123456";
-        Response response = notesService.getAllNotesByAccountId(account_num, page, limit);
+                                                         @RequestParam(defaultValue = "10") int limit,
+                                                         @RequestAttribute("id") String id) {
+        Response response = notesService.getAllNotesByAccountId(id, page, limit);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -60,10 +59,9 @@ public class NotesController {
     }
 
     @PostMapping(value = "/notes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request) {
-        // Hardcoded for now till actual account ID can be obtained from JWT
-        String account_num = "123456";
-        request.setFkAccountOwner(account_num);
+    public ResponseEntity<Response> createNotes(@Valid @ModelAttribute NotesRequest request,
+                                                @RequestAttribute("id") String id) {
+        request.setFkAccountOwner(id);
         Response notesResponse = notesService.createNotes(request);
         return new ResponseEntity<>(notesResponse, HttpStatus.CREATED);
     }
@@ -76,14 +74,16 @@ public class NotesController {
 
     @PutMapping("/notes/{notesId}")
     public ResponseEntity<Response> replaceNotesById(@PathVariable("notesId") String notesId,
-                                                     @Valid @RequestBody NotesRequest request) {
-        Response response = notesService.replaceNotes(notesId, request);
+                                                     @Valid @RequestBody NotesRequest request,
+                                                     @RequestAttribute("id") String id) {
+        Response response = notesService.replaceNotes(id, notesId, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/notes/{notesId}")
-    public ResponseEntity<Response> deleteNotesById(@PathVariable("notesId") String notesId) {
-        Response response = notesService.deleteNotes(notesId);
+    public ResponseEntity<Response> deleteNotesById(@PathVariable("notesId") String notesId,
+                                                    @RequestAttribute("id") String id) {
+        Response response = notesService.deleteNotes(id, notesId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
