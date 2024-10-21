@@ -9,11 +9,13 @@ trigger_orders:
     - changes:
         - apps/orders/**/*
 
-# trigger_account:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - apps/account/**/*
+trigger_account:
+  stage: trigger
+  trigger:
+    include: apps/account/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/account/**/*
 
 trigger_notes:
   stage: trigger
