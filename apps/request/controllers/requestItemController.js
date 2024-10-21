@@ -1,5 +1,5 @@
 const RequestItemService = require('../services/requestItemService');
-const {getEmail} = require("../../../middlewares/token_verifier/index")
+const {getEmail} = require("token-verifier-mee-rebus")
 async function getRequestItemById(req, res) {
   try {
     const { requestId } = req.params;
