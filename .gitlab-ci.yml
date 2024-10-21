@@ -35,8 +35,10 @@ trigger_notes:
 #     - changes:
 #         - apps/reviews/**/*
 
-# trigger_verify:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - apps/verify/**/*
+trigger_verify:
+  stage: trigger
+  trigger:
+    include: apps/verify/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/verify/**/*
