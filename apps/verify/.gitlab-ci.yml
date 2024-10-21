@@ -6,7 +6,7 @@ stages:
 
 variables:
   SERVICE: "verify"
-  DS_EXCLUDED_ANALYZERS: "genasium,gemnasium-maven"
+  DS_EXCLUDED_ANALYZERS: "gemnasium,gemnasium-maven"
   ECR_REGISTRY: "211125709264.dkr.ecr.ap-southeast-1.amazonaws.com/${SERVICE}"
   IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
