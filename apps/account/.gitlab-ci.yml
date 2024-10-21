@@ -36,8 +36,6 @@ account-build:
   artifacts:
     reports:
       dotenv: ./apps/${SERVICE}/build.env
-  # only:
-  #   - tags
 
 container_scanning:
   stage: scan
