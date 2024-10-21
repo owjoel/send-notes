@@ -20,6 +20,11 @@ async function tokenValid(req,res, next){
 
     const accessToken = req.cookies.access_token;
 
+    if(!accessToken){
+        console.log("Token not valid!");
+        return res.status(401).json({errorMessage: "Unauthorized access"})
+    }
+
     const verifier = CognitoJwtVerifier.create({
         userPoolId: process.env["cognito_userpool-id"],
         tokenUse: "access",
