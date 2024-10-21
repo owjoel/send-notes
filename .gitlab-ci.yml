@@ -25,11 +25,13 @@ trigger_notes:
     - changes:
         - apps/notes/**/*
 
-# trigger_request:
-#   stage: trigger
-#   rules:
-#     - changes:
-#         - apps/request/**/*
+trigger_request:
+  stage: trigger
+  trigger:
+    include: apps/request/.gitlab-ci.yml
+  rules:
+    - changes:
+        - apps/request/**/*
 
 # trigger_reviews:
 #   stage: trigger
