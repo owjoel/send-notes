@@ -1,0 +1,81 @@
+services:
+  ####################################
+  # nginx: API Gateway
+  ####################################
+  api-gateway:
+    build:
+      context: ./apiGateway
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - './apiGateway/.env'
+    ports:
+      - "8080:80"
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
+
+  ####################################
+  # rabbitmq: RabbitMQ
+  ####################################
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmqctl status" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+#
+  ####################################
+  # orders: Orders Service
+  ####################################
+  test:
+    build:
+      context: ./orders
+      dockerfile: ./docker/Dockerfile
+      target: development
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - './orders/.env'
+    develop:
+      watch:
+        - action: sync
+          path: ..
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+  ####################################
+  # account: Account Service
+  ####################################
+  account:
+    build:
+      context: ./account
+      dockerfile: Dockerfile
+#    container_name: account
+    env_file:
+      - './account/.env'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+#  ####################################
+#  # notes: Notes Service
+#  ####################################
+  notes:
+    build:
+      context: ./notes
+      dockerfile: Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - './notes/src/main/resources/secrets.properties'

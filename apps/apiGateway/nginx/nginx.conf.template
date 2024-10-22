@@ -1,0 +1,24 @@
+server {
+ listen 80;
+
+ location = /favicon.ico {
+   log_not_found off;
+ }
+
+ location /api/v1/auth {
+   proxy_pass ${account_service_url_internal}/auth
+ }
+
+location /api/v1/users {
+    proxy_pass ${account_service_url_internal}/users
+}
+
+ location /api/v1/orders {
+   proxy_pass ${orders_service_url_internal}/orders
+ }
+
+ location /api/v1/notes {
+   proxy_pass ${notes_service_url_internal}/notes
+ }
+
+}
