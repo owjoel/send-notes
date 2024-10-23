@@ -11,9 +11,9 @@ services:
       - './apiGateway/.env'
     ports:
       - "8080:80"
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   ####################################
   # rabbitmq: RabbitMQ
@@ -35,7 +35,7 @@ services:
   ####################################
   # orders: Orders Service
   ####################################
-  test:
+  orders:
     build:
       context: ./orders
       dockerfile: ./docker/Dockerfile
@@ -43,6 +43,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
     env_file:
       - './orders/.env'
     develop:
@@ -54,6 +56,7 @@ services:
             - node_modules/
         - action: rebuild
           path: package.json
+
   ####################################
   # account: Account Service
   ####################################
@@ -61,7 +64,6 @@ services:
     build:
       context: ./account
       dockerfile: Dockerfile
-#    container_name: account
     env_file:
       - './account/.env'
     depends_on:
@@ -74,8 +76,30 @@ services:
     build:
       context: ./notes
       dockerfile: Dockerfile
+    ports:
+      - '3000:8080'
     depends_on:
       rabbitmq:
         condition: service_healthy
     env_file:
       - './notes/src/main/resources/secrets.properties'
+  #  ####################################
+  #  # notes: Notes Service
+  #  ####################################
+  verify:
+    build:
+      context: ./verify
+      dockerfile: Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - './verify/.env'
+  #  ####################################
+  #  # stripe: Stripe webhook listener
+  #  ####################################
+  stripe-cli:
+    image: stripe/stripe-cli
+    command:
+      --api-key ${STRIPE_SECRET_KEY}
+      listen --forward-to http://host.docker.internal:8080/api/v1/stripe/webhook

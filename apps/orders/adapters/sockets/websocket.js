@@ -9,12 +9,10 @@ function configSocket(server) {
     try {
       const pathname = url.parse(req.url).pathname;
       const segments = pathname.split("/").filter((seg) => seg !== "");
-
-      if (segments[0] === "orders" && segments[1] !== undefined) {
+      if (segments[2] === "orders" && segments[3] !== undefined) {
         wss.handleUpgrade(req, socket, head, (ws) => {
-          console.log('New Order WebSocket connection');
-          console.log('orderID:', segments[1]);
-          const orderId = segments[1]; // Extract order ID from the URL
+          console.log('orderID:', segments[3]);
+          const orderId = segments[3]; // Extract order ID from the URL
           handleOrderRequest(ws, orderId); // Call the order handling function
         });
       } else {

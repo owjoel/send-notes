@@ -1,24 +1,54 @@
 server {
  listen 80;
 
+ client_header_buffer_size 16k;
+ large_client_header_buffers 4 16k;
+ client_body_buffer_size     50M;
+ client_max_body_size        50M;
+
+ proxy_buffer_size 16k;
+ proxy_buffers 8 16k;
+ proxy_busy_buffers_size 24k;
+ proxy_request_buffering off;
+
  location = /favicon.ico {
    log_not_found off;
  }
 
  location /api/v1/auth {
-   proxy_pass ${account_service_url_internal}/auth
+   proxy_pass ${account_service_url_internal}/auth;
  }
 
-location /api/v1/users {
-    proxy_pass ${account_service_url_internal}/users
-}
+ location /api/v1/users {
+   proxy_pass ${account_service_url_internal}/users;
+ }
 
  location /api/v1/orders {
-   proxy_pass ${orders_service_url_internal}/orders
+     proxy_pass ${orders_service_url_internal}/orders;
+        # Ensure NGINX is using HTTP/1.1
+        proxy_http_version 1.1;
+
+        # Set headers necessary for WebSocket handling
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        # Other proxy headers (optional but recommended)
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Disable buffering for WebSocket
+        proxy_buffering off;
  }
 
+  location /api/v1/stripe {
+    proxy_pass ${orders_service_url_internal}/stripe;
+  }
+
  location /api/v1/notes {
-   proxy_pass ${notes_service_url_internal}/notes
+   proxy_pass ${notes_service_url_internal}/notes;
+
  }
 
 }
