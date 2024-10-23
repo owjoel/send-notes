@@ -3,6 +3,7 @@ stages:
   - build
   - scan
   - push
+  - staging
 
 variables:
   SERVICE: "notes"
