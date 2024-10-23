@@ -268,10 +268,9 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
             listing.status = "Rejected"
         print('listingBefore:', listing)
         queue.put(listing)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         print(e)
-    finally:
-        ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
