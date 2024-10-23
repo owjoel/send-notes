@@ -9,3 +9,5 @@ uploads
 
 # Logging
 verify.log
+
+tmp/*
