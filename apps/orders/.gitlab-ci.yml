@@ -49,7 +49,7 @@ orders-build:
     - VERSION="${SEMVER}-${CI_COMMIT_SHORT_SHA}"
     - echo "VERSION=${VERSION}" >> build.env
 
-    - docker build -f docker/Dockerfile -t $IMAGE .
+    - docker build --target production -f docker/Dockerfile -t $IMAGE .
     - docker push $IMAGE
   artifacts:
     reports:
