@@ -268,11 +268,10 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
             listing.status = "Rejected"
         print('listingBefore:', listing)
         queue.put(listing)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         print(e)
-    finally:
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
+      
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
     print(f"Consumer Connected: {host}")
@@ -295,11 +294,9 @@ def producer() -> None:
             if listing is None:
                 break
             print(f"Listing type: {type(listing)}, content: {listing.to_json()}")
-            print(exchange)
             ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
 
         except Exception as e:
-            print(e)
             print("Caught:", e.__traceback__)
 
 

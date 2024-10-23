@@ -38,14 +38,23 @@ public class StorageServiceImpl implements StorageService {
 
         // Convert file and store in S3 bucket
         File fileObj = convertMultiPartFileToFile(file);
-        String fileName = fkAccountOwner + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String fileName = fkAccountOwner + "_" + System.currentTimeMillis() + "_" + secureFileName(file.getOriginalFilename());
         s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
         fileObj.delete();
         return s3Client.getUrl(bucketName, fileName).toString();
     }
+
+    // Removes all spaces in the string to
+    private String secureFileName(String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf("."));
+        String fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf("."));
+        String secureFileName = fileNameWithoutExtension.replace(" ", "").replaceAll("[^a-zA-Z0-9]+","") + extension;
+        System.out.println(secureFileName);
+        return secureFileName;
+    }
     
     private File convertMultiPartFileToFile(MultipartFile file) {
-        File convertedFile = new File(file.getOriginalFilename());
+        File convertedFile = new File(secureFileName(file.getOriginalFilename()));
         try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
             fos.write(file.getBytes());
         } catch (IOException e) {
