@@ -24,6 +24,8 @@ load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_KEY") 
 VERIFIER_ASSISTANT_ID = os.getenv("VERIFIER_ASSISTANT_ID")
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID")
+AWS_ACCESS_KEY_ID=os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY=os.getenv("AWS_SECRET_KEY")
 
 # Specify global variables
 API_HEADER = '/api'
@@ -155,7 +157,7 @@ def create_run(thread_id: str):
 def run_assistant(file):
     if file is None: raise ValueError(fileNotUploadedError)
     # Create messages
-    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions, less than 50 tokens and ensure that response is in the JSON format is kept.'''}]
+    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions. Response must be in JSON format of {{"verified":<verified>}} is kept.'''}]
     # Create thread to run
     thread = client.beta.threads.create(messages=messages)
     # Create run
@@ -221,7 +223,7 @@ exchange = os.getenv("RABBITMQ_EXCHANGE")
 amqp_queue = os.getenv("RABBITMQ_QUEUE")
 
 queue = queue.Queue()
-s3 = boto3.resource('s3')
+s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_KEY)
 
 @dataclass
 class ListingStatus():
@@ -244,6 +246,7 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
     data = json.loads(body)
     listing: ListingStatus = ListingStatus(**data)
     print('Listing', listing)
+    app.logger.info(listing)
 
     parsed_url = urlparse(listing.url)
     bucket = parsed_url.netloc.split('.')[0]
@@ -255,7 +258,7 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
 
     local_path = f"{os.getcwd()}/tmp/{key}"
     try:
-        s3.Bucket(bucket).download_file(key, local_path)
+        s3.download_file(bucket, key, local_path)
         file = upload_file_to_openai(local_path)
         delete_file_from_local(local_path)
         json_response = run_assistant(file=file)
@@ -271,6 +274,8 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         print(e)
+    # finally:
+    #     ch.basic_ack(delivery_tag=method.delivery_tag)
       
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
@@ -305,4 +310,4 @@ if __name__ == "__main__":
     producer = threading.Thread(target=producer, daemon=True)
     consumer.start();
     producer.start();
-    app.run()
+    app.run(debug=True)
