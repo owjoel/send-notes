@@ -4,7 +4,7 @@ ARG NODE_VERSION=lts
 
 ################################################################################
 # Base image
-FROM node:${NODE_VERSION}-alpine AS base
+FROM node:${NODE_VERSION}-alpine-3.19 AS base
 
 # Set working directory for all build stages.
 WORKDIR /app
@@ -13,8 +13,10 @@ WORKDIR /app
 FROM base AS production
 
 COPY ./package.json .
+
 COPY ./package-lock.json .
-RUN npm ci
+
+RUN npm ci --production
 
 COPY . .
 
