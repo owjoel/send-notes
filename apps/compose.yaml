@@ -31,20 +31,18 @@ services:
       interval: 15s
       timeout: 10s
       retries: 5
-#
+
   ####################################
   # orders: Orders Service
   ####################################
   orders:
     build:
       context: ./orders
-      dockerfile: ./docker/Dockerfile
+      dockerfile: Dockerfile
       target: development
     depends_on:
       rabbitmq:
         condition: service_healthy
-    environment:
-      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
     env_file:
       - './orders/.env'
     develop:
@@ -69,6 +67,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+
 #  ####################################
 #  # notes: Notes Service
 #  ####################################
@@ -78,11 +77,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3000:8080'
+    user: "root"  # Run the container as root user
     depends_on:
       rabbitmq:
         condition: service_healthy
     env_file:
       - './notes/src/main/resources/secrets.properties'
+
   #  ####################################
   #  # notes: Notes Service
   #  ####################################
@@ -95,6 +96,7 @@ services:
         condition: service_healthy
     env_file:
       - './verify/.env'
+
   #  ####################################
   #  # stripe: Stripe webhook listener
   #  ####################################
