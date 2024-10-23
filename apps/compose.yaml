@@ -38,13 +38,11 @@ services:
   orders:
     build:
       context: ./orders
-      dockerfile: ./docker/Dockerfile
+      dockerfile: Dockerfile
       target: development
     depends_on:
       rabbitmq:
         condition: service_healthy
-    environment:
-      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
     env_file:
       - './orders/.env'
     develop:

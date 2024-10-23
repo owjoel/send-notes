@@ -1,18 +1,22 @@
 services:
   orders:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: development
-    depends_on:
-      rabbitmq:
-          condition: service_healthy
+#    depends_on:
+#      rabbitmq:
+#          condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
     ports:
-      - 3000:3000
+      - '3000:3000'
     develop:
       watch:
         - action: sync
-          path: ..
+          path: .
           target: /app
           ignore:
             - node_modules/
@@ -29,6 +33,6 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     healthcheck:
       test: [ "CMD-SHELL", "rabbitmqctl status" ]
-      interval: 30s
+      interval: 10s
       timeout: 10s
       retries: 5
