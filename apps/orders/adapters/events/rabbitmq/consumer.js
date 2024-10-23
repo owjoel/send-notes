@@ -26,7 +26,6 @@ async function configConsumer() {
     await ch.assertQueue(notesFoundQ);
     ch.bindQueue(notesFoundQ, 'orders', 'orders.notes.#');
     await ch.consume(notesFoundQ, handleNotesEvent);
-
   } catch (err) {
     console.log(err);
   }
@@ -46,6 +45,7 @@ const handleNotesEvent = (message) => {
 }
 
 function handleEvent(message, fn) {
+  console.log(message.content.toString())
   const data = JSON.parse(message.content.toString());
   fn(data);
   ch.ack(message);
