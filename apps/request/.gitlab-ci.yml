@@ -102,4 +102,4 @@ ecs-staging:
   only:
     - main
   dependencies:
-    - request-push
+    - request-build
