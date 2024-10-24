@@ -102,6 +102,6 @@ ecs-staging:
   only:
     - main
   dependencies:
-    - account-push
+    - account-build
 
 
