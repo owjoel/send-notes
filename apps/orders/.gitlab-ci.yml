@@ -121,4 +121,4 @@ ecs-staging:
   only:
     - main
   dependencies:
-    - orders-push
+    - orders-build
