@@ -8,6 +8,7 @@ import threading
 import json
 import queue
 import boto3
+import logging
 
 from urllib.parse import urlparse
 from dataclasses import dataclass
@@ -18,6 +19,10 @@ from openai import APIConnectionError, InternalServerError, OpenAI, NotFoundErro
 
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
+
+logging.basicConfig(level=logging.INFO)
+pika_logger = logging.getLogger("pika")
+pika_logger.setLevel(logging.INFO)
 
 # Obtain environment variables
 load_dotenv()
@@ -51,6 +56,7 @@ CORS(app)
 
 @app.route(API_HEADER + "/health")
 def health_check():
+    logging.info("health check")
     return jsonify({"message": "Verify Service is healthy"}), 200
 
 
@@ -246,6 +252,7 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
     data = json.loads(body)
     listing: ListingStatus = ListingStatus(**data)
     print('Listing', listing)
+    logging.info("LOGLOGLOGLOGLOG")
     app.logger.info(listing)
 
     parsed_url = urlparse(listing.url)
@@ -279,7 +286,7 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
       
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    print(f"Consumer Connected: {host}")
+    logging.info(f"Consumer Connected: {host}")
     ch = conn.channel()
 
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
@@ -290,7 +297,7 @@ def consumer() -> None:
 
 def producer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    print(f"Producer Connected: {host}")
+    logging.info(f"Producer Connected: {host}")
     ch = conn.channel()
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
     while True:
@@ -304,10 +311,10 @@ def producer() -> None:
         except Exception as e:
             print("Caught:", e.__traceback__)
 
+consumer = threading.Thread(target=consumer, daemon=True)
+producer = threading.Thread(target=producer, daemon=True)
+consumer.start();
+producer.start();
 
 if __name__ == "__main__":
-    consumer = threading.Thread(target=consumer, daemon=True)
-    producer = threading.Thread(target=producer, daemon=True)
-    consumer.start();
-    producer.start();
-    app.run(debug=True)
+    app.run()
