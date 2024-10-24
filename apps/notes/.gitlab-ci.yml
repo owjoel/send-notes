@@ -119,6 +119,6 @@ ecs-staging:
   only:
     - main
   dependencies:
-    - notes-push
+    - notes-build
 
 

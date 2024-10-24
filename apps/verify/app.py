@@ -276,7 +276,6 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
             listing.status = "Verified"
         else:
             listing.status = "Rejected"
-        print('listingBefore:', listing)
         queue.put(listing)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
