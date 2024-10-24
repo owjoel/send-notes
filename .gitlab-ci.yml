@@ -5,6 +5,7 @@ trigger_orders:
   stage: trigger
   trigger:
     include: apps/orders/.gitlab-ci.yml
+    strategy: depend
   rules:
     - changes:
         - apps/orders/**/*
@@ -13,6 +14,7 @@ trigger_account:
   stage: trigger
   trigger:
     include: apps/account/.gitlab-ci.yml
+    strategy: depend
   rules:
     - changes:
         - apps/account/**/*
@@ -21,6 +23,7 @@ trigger_notes:
   stage: trigger
   trigger:
     include: apps/notes/.gitlab-ci.yml
+    strategy: depend
   rules:
     - changes:
         - apps/notes/**/*
@@ -29,6 +32,7 @@ trigger_request:
   stage: trigger
   trigger:
     include: apps/request/.gitlab-ci.yml
+    strategy: depend
   rules:
     - changes:
         - apps/request/**/*
@@ -43,6 +47,7 @@ trigger_verify:
   stage: trigger
   trigger:
     include: apps/verify/.gitlab-ci.yml
+    strategy: depend
   rules:
     - changes:
         - apps/verify/**/*
