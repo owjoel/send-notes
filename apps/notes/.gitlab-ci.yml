@@ -9,7 +9,7 @@ variables:
   SERVICE: "notes"
   DS_EXCLUDED_ANALYZERS: "gemnasium,gemnasium-python"
   ECR_REGISTRY: "211125709264.dkr.ecr.ap-southeast-1.amazonaws.com/${SERVICE}"
-  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  IMAGE: "$CI_REGISTRY_IMAGE:$SERVICE-$CI_COMMIT_REF_SLUG"
   SERVICE_NAME: notes-ecs-staging
   TASK_DEFINITION_NAME: notes-ecs-task-staging
 
