@@ -121,4 +121,4 @@ ecs-staging:
   only:
     - main
   dependencies:
-    - verify-push
+    - verify-build
