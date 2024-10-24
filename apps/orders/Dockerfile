@@ -4,7 +4,7 @@ ARG NODE_VERSION=lts
 
 ################################################################################
 # Base image
-FROM node:${NODE_VERSION}-alpine-3.19 AS base
+FROM node:${NODE_VERSION}-alpine3.19 AS base
 
 # Set working directory for all build stages.
 WORKDIR /app
