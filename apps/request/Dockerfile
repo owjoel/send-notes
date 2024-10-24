@@ -6,7 +6,7 @@ WORKDIR /home/node/app
 
 COPY package*.json ./
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 COPY --chown=node:node . .
 
