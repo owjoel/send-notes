@@ -8,7 +8,6 @@ import threading
 import json
 import queue
 import boto3
-import logging
 
 from urllib.parse import urlparse
 from dataclasses import dataclass
@@ -20,17 +19,11 @@ from openai import APIConnectionError, InternalServerError, OpenAI, NotFoundErro
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
-logging.basicConfig(level=logging.INFO)
-pika_logger = logging.getLogger("pika")
-pika_logger.setLevel(logging.INFO)
-
 # Obtain environment variables
 load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_KEY") 
 VERIFIER_ASSISTANT_ID = os.getenv("VERIFIER_ASSISTANT_ID")
 VECTOR_STORE_ID = os.getenv("VECTOR_STORE_ID")
-AWS_ACCESS_KEY_ID=os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_KEY=os.getenv("AWS_SECRET_KEY")
 
 # Specify global variables
 API_HEADER = '/api'
@@ -56,7 +49,6 @@ CORS(app)
 
 @app.route(API_HEADER + "/health")
 def health_check():
-    logging.info("health check")
     return jsonify({"message": "Verify Service is healthy"}), 200
 
 
@@ -163,7 +155,7 @@ def create_run(thread_id: str):
 def run_assistant(file):
     if file is None: raise ValueError(fileNotUploadedError)
     # Create messages
-    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions. Response must be in JSON format of {{"verified":<verified>}} is kept.'''}]
+    messages = [{"role": "user", "content": f'''Given the file id """{file.id}""", verify if the file is appropriate based on the system instructions, less than 50 tokens and ensure that response is in the JSON format is kept.'''}]
     # Create thread to run
     thread = client.beta.threads.create(messages=messages)
     # Create run
@@ -229,7 +221,7 @@ exchange = os.getenv("RABBITMQ_EXCHANGE")
 amqp_queue = os.getenv("RABBITMQ_QUEUE")
 
 queue = queue.Queue()
-s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_KEY)
+s3 = boto3.resource('s3')
 
 @dataclass
 class ListingStatus():
@@ -251,21 +243,17 @@ class ListingStatus():
 def on_message(ch: Channel, method, properties, body: bytes) -> None:
     data = json.loads(body)
     listing: ListingStatus = ListingStatus(**data)
-    print('Listing', listing)
-    logging.info("LOGLOGLOGLOGLOG")
-    app.logger.info(listing)
+    print('Listing:', listing)
 
     parsed_url = urlparse(listing.url)
     bucket = parsed_url.netloc.split('.')[0]
     key = parsed_url.path.lstrip('/')
     print(bucket, key)
 
-    if not os.path.exists(f"{os.getcwd()}/tmp"):
-        os.mkdir(f"{os.getcwd()}/tmp")
-
     local_path = f"{os.getcwd()}/tmp/{key}"
+    print(local_path)
     try:
-        s3.download_file(bucket, key, local_path)
+        s3.Bucket(bucket).download_file(key, local_path)
         file = upload_file_to_openai(local_path)
         delete_file_from_local(local_path)
         json_response = run_assistant(file=file)
@@ -277,15 +265,14 @@ def on_message(ch: Channel, method, properties, body: bytes) -> None:
         else:
             listing.status = "Rejected"
         queue.put(listing)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         print(e)
-    # finally:
-    #     ch.basic_ack(delivery_tag=method.delivery_tag)
-      
+    finally:
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
 def consumer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    logging.info(f"Consumer Connected: {host}")
+    print(f"Consumer Connected: {host}")
     ch = conn.channel()
 
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
@@ -296,7 +283,7 @@ def consumer() -> None:
 
 def producer() -> None:
     conn = pika.BlockingConnection(pika.URLParameters(url))
-    logging.info(f"Producer Connected: {host}")
+    print(f"Producer Connected: {host}")
     ch = conn.channel()
     ch.exchange_declare(exchange=exchange, exchange_type="topic", durable=True)
     while True:
@@ -308,12 +295,13 @@ def producer() -> None:
             ch.basic_publish(exchange=exchange, routing_key="listings.verified", body=json.dumps(listing.to_json()))
 
         except Exception as e:
+            print(e)
             print("Caught:", e.__traceback__)
 
-consumer = threading.Thread(target=consumer, daemon=True)
-producer = threading.Thread(target=producer, daemon=True)
-consumer.start();
-producer.start();
 
 if __name__ == "__main__":
+    consumer = threading.Thread(target=consumer, daemon=True)
+    producer = threading.Thread(target=producer, daemon=True)
+    consumer.start();
+    producer.start();
     app.run()

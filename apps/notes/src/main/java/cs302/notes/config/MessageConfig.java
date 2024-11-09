@@ -72,7 +72,7 @@ public class MessageConfig {
     }
 
     /**
-     * Creates a binding of queue "order-success" to exchange "orders" with routing key "orders.success"
+     * Creates a binding of queue "listings-verified" to exchange "listings" with routing key "listings.verified"
      */
     @Bean
     Binding binding3(Queue verifiedQueue, TopicExchange listingsExchange) {
