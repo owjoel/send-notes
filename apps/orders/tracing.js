@@ -3,13 +3,49 @@ const { AmqplibInstrumentation } = require('@opentelemetry/instrumentation-amqpl
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 const { ExpressInstrumentation } = require("@opentelemetry/instrumentation-express");
 const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-grpc');
+const { OTLPMetricExporter } = require('@opentelemetry/exporter-metrics-otlp-grpc')
+const { Resource } = require('@opentelemetry/resources');
+const { PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
+const { RuntimeNodeInstrumentation } = require("@opentelemetry/instrumentation-runtime-node");
+
+console.log("Tracing started for ORDERS");
+
+const resource = new Resource({
+  'service.name': 'orders',
+  'environment': process.env.OTEL_ENVIRONMENT
+});
+
+const traceExporter = new OTLPTraceExporter({ url: process.env.OTEL_HOST_URL });
+const metricExporter = new OTLPMetricExporter({ url: process.env.OTEL_HOST_URL });
+
+const metricReader = new PeriodicExportingMetricReader({
+  exporter: metricExporter,
+  interval: 30000
+})
 
 const sdk = new opentelemetry.NodeSDK({
-  traceExporter: new OTLPTraceExporter({ url: 'http://localhost:4317' }),
+  resource: resource,
+  traceExporter: traceExporter,
+  metricReader: metricReader,
+  
   instrumentations: [
-    new AmqplibInstrumentation(),
     new HttpInstrumentation(),
     new ExpressInstrumentation(),
+    new RuntimeNodeInstrumentation({
+      monitoringPrecision: 5000,
+    }),
+    new AmqplibInstrumentation({
+      onReceiveHook: (span, message) => {
+        if (message.properties && message.properties.correlationId) {
+          span.setAttribute("message.correlation_id", message.properties.correlationId);
+        }
+      },
+      onSendHook: (span, message) => {
+        if (message.properties && message.properties.correlationId) {
+          span.setAttribute("message.correlation_id", message.properties.correlationId);
+        }
+      },
+    }),
   ],
   serviceName: process.env.SERVICE,
 });
@@ -23,31 +59,3 @@ process.on("SIGTERM", () => {
     .catch((error) => console.log("Error terminating OTel tracing", error))
     .finally(() => process.exit(0));
 });
-
-// // tracing.js
-// const { NodeSDK } = require('@opentelemetry/sdk-node')
-// const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-proto')
-// const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node')
-// const { BatchSpanProcessor, SamplingDecision } = require('@opentelemetry/sdk-trace-base')
-// const { trace } = require('@opentelemetry/api')
-
-// const exporter = new OTLPTraceExporter({
-//   timeoutMillis: 2000,
-// })
-
-// const sdk = new NodeSDK({
-//   instrumentations: [getNodeAutoInstrumentations()],
-//   spanProcessors: new BatchSpanProcessor(exporter),
-//   sampler: {
-//     shouldSample: (context, traceId, spanName, spanKind, attributes, links) => {
-//       const isChecklySpan = trace.getSpan(context)?.spanContext()?.traceState?.get('checkly')
-//       if (isChecklySpan) {
-//         return { decision: SamplingDecision.RECORD_AND_SAMPLED }
-//       } else {
-//         return { decision: SamplingDecision.NOT_RECORD }
-//       }
-//     },
-//   },
-// })
-
-// sdk.start()
