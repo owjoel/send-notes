@@ -23,26 +23,26 @@ async function auth(req, res){
         res.cookie('id_token', tokens["id_token"], {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         res.cookie('access_token', tokens["access_token"], {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
 
         res.cookie('refresh_token', tokens["refresh_token"], {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         res.cookie('auth', "true", {
             httpOnly: false,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         const tokenIssuedAtInSeconds = Date.now();
@@ -53,7 +53,7 @@ async function auth(req, res){
         res.cookie('access_token_expire', tokenMaxAge, {
             httpOnly: false,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         return res.status(response.status).json()
@@ -81,13 +81,13 @@ async function refreshToken(req, res){
         res.cookie('id_token', tokens["id_token"], {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         res.cookie('access_token', tokens["access_token"], {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
         console.log("HELLO:", tokens["access_token"])
 
@@ -99,7 +99,7 @@ async function refreshToken(req, res){
         res.cookie('access_token_expire', tokenMaxAge, {
             httpOnly: false,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: 'none'
         });
 
         return res.status(200).json({tokens})
