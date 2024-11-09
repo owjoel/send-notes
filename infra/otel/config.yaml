@@ -1,0 +1,52 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http: 
+        endpoint: 0.0.0.0:4318
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      memory:
+      disk:
+      network:
+      process:
+      processes:
+      paging:
+
+processors:
+  # batch:
+  #   timeout: 2s
+  #   send_batch_size: 
+  #   send_batch_max_size: 100
+  memory_limiter:
+    limit_mib: 2000
+    check_interval: 1s
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlp/elastic:
+    endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+    headers:
+      Authorization: "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
+
+service:
+  telemetry:
+    metrics:
+      level: detailed
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, otlp/elastic]
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, otlp/elastic]
+    logs: 
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, otlp/elastic]
